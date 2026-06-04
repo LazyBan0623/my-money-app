@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>淡紫記帳 Pro v14</title>
-<!-- 引入 Manrope 字體 (接近 DIN 風格) -->
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+<title>淡紫記帳 Pro v15</title>
+<!-- 引入 M PLUS Rounded 1c (類思源柔黑體) -->
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
@@ -16,71 +16,65 @@
   --theme-dark: #a879b9;
   --theme-light: rgba(195, 142, 213, 0.15);
   --bg: #F9F9FB;
+  --text: #444; /* 深灰色非純黑 */
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
 }
+/* 基礎設定 */
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { height: 100dvh; width: 100%; background: var(--bg); font-family: 'Noto Sans TC', sans-serif; color: #333; overflow: hidden; }
+body { height: 100dvh; width: 100%; background: var(--bg); font-family: 'M PLUS Rounded 1c', sans-serif; color: var(--text); overflow: hidden; }
 #app { height: 100%; display: flex; flex-direction: column; position: relative; }
 
-/* 數字專用 DIN 風格字體 */
-.amt-num { font-family: 'Manrope', sans-serif; font-weight: 800; }
-
-/* 頂部 Header */
+/* 頂部 Header 重構 */
 .header-bg {
   background: linear-gradient(135deg, var(--theme) 0%, var(--theme-dark) 100%);
   color: white; padding: calc(10px + var(--safe-top)) 20px 25px;
   border-radius: 0 0 35px 35px; flex-shrink: 0; z-index: 10;
 }
-.h-grid { display: grid; grid-template-columns: 90px 1fr 30px; align-items: center; }
+.h-date-row { text-align: center; font-size: 11px; font-weight: 700; opacity: 0.9; position: relative; height: 20px; }
+.h-icon-top { position: absolute; right: 0; top: 0; }
+.h-title-row { text-align: center; margin: 12px 0 18px; }
+.h-main-name { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+.h-sub-desc { font-size: 10px; opacity: 0.8; margin-top: 4px; }
 
-/* 卡片 */
-.card { background: white; border-radius: 20px; padding: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.04); margin-bottom: 12px; }
-.scroll-area { flex: 1; overflow-y: auto; padding: 15px 18px 140px; -webkit-overflow-scrolling: touch; }
+/* 存款大卡片 (小豬視覺強化) */
+.balance-card { background: white; border-radius: 25px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; }
+.piggy-wrap { width: 64px; height: 64px; border-radius: 50%; background: var(--theme-light); color: var(--theme); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; border: 2px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-/* 螢幕與導航 */
+/* 內容區 */
 .screen { display: none; flex-direction: column; height: 100%; overflow: hidden; }
 .screen.active { display: flex; }
-.bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; padding-bottom: var(--safe-bottom); border-top: 1px solid #EEE; z-index: 100; }
-.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 0; color: #BBB; font-size: 10px; font-weight: bold; }
-.nav-item.active { color: var(--theme); }
-.fab { position: fixed; bottom: calc(82px + var(--safe-bottom)); right: 20px; width: 58px; height: 58px; background: var(--theme); color: white; border-radius: 29px; border: none; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 90; display: flex; align-items: center; justify-content: center; }
+.scroll-area { flex: 1; overflow-y: auto; padding: 15px 18px 140px; -webkit-overflow-scrolling: touch; }
 
-/* 彈窗 UI 修正 */
+/* 進度條強化 */
+.card-v { background: white; border-radius: 20px; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03); margin-bottom: 12px; }
+.prog-bg { height: 10px; background: #F0F0F0; border-radius: 10px; overflow: hidden; margin: 10px 0; border: 1px solid #EEE; }
+.prog-fill { height: 100%; background: var(--theme); transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* 數字字體 */
+.num-font { font-family: 'Manrope', sans-serif; font-weight: 800; }
+
+/* 歷史頁面支出收入卡片 */
+.hist-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.hist-sum-box { background: white; border-radius: 18px; padding: 15px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.02); }
+
+/* 底部導航 */
+.bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 430px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); display: flex; padding-bottom: var(--safe-bottom); border-top: 1px solid #EEE; z-index: 100; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 0; color: #BBB; font-size: 10px; font-weight: 800; }
+.nav-item.active { color: var(--theme); }
+.fab { position: fixed; bottom: calc(82px + var(--safe-bottom)); right: 20px; width: 60px; height: 60px; background: var(--theme); color: white; border-radius: 30px; border: none; box-shadow: 0 8px 20px rgba(0,0,0,0.1); z-index: 90; display: flex; align-items: center; justify-content: center; }
+
+/* 彈窗修正 */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: flex-end; }
 .modal-overlay.open { display: flex; }
 .modal-sheet { background: white; width: 100%; border-radius: 30px 30px 0 0; padding-bottom: var(--safe-bottom); height: 94vh; display: flex; flex-direction: column; overflow: hidden; }
-.modal-header { height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #F5F5F5; flex-shrink: 0; }
-.modal-body { flex: 1; overflow-y: auto; padding: 10px 0; }
+.modal-header { height: 55px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #F5F5F5; }
 
-/* 分類方塊：緊湊風格 */
-.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px 15px; }
-.cat-btn { display: flex; flex-direction: column; align-items: center; opacity: 0.3; transition: 0.2s; }
-.cat-btn.active { opacity: 1; }
-.cat-sq { width: 44px; height: 44px; border-radius: 12px; background: var(--theme); color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 4px; box-shadow: 0 3px 8px var(--theme-light); }
-.cat-txt { font-size: 10px; font-weight: 700; color: #666; }
+.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px 15px; }
+.cat-sq { width: 44px; height: 44px; border-radius: 12px; background: var(--theme); color: white; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; }
 
-/* 鍵盤 */
-.k-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px 15px; background: #F8F8F8; }
-.k-btn { background: white; border: none; height: 48px; border-radius: 12px; font-size: 20px; font-weight: 800; color: #444; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-.k-ok { background: var(--theme); color: white; grid-row: span 2; height: 104px; }
-
-/* 分析報表 */
-.report-item { background: white; border-radius: 18px; padding: 15px; margin-bottom: 10px; border-left: 5px solid var(--theme); box-shadow: 0 3px 10px rgba(0,0,0,0.02); }
-.pill { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 20px; }
-.pill-up { background: #ffebee; color: #ff6b6b; }
-.pill-down { background: #e8f5e9; color: #4ecb71; }
-
-/* 月曆 */
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); width: 100%; }
-.cal-cell { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; position: relative; }
-.cal-cell.h { font-size: 10px; color: #CCC; height: 30px; }
-.cal-dot { width: 4px; height: 4px; background: var(--theme); border-radius: 50%; margin-top: 2px; }
-
-/* 設定顏色按鈕 */
-.color-circle { width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.1); cursor: pointer; }
-.color-picker-wrap { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; position: relative; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
-#s-color { position: absolute; top: -5px; left: -5px; width: 50px; height: 50px; border: none; cursor: pointer; }
+/* 分析頁面報表 */
+.report-card { background: white; border-radius: 20px; padding: 15px; margin-bottom: 12px; border-left: 6px solid var(--theme); box-shadow: 0 3px 10px rgba(0,0,0,0.02); }
 </style>
 </head>
 <body>
@@ -89,31 +83,30 @@ body { height: 100dvh; width: 100%; background: var(--bg); font-family: 'Noto Sa
   <!-- ════════ 1. 首頁 ════════ -->
   <div class="screen active" id="pg-home">
     <div class="header-bg">
-        <div class="h-grid">
-            <div id="h-date" style="font-size:11px; font-weight:800; opacity:0.9;"></div>
-            <div style="text-align:center;">
-                <div style="font-size:18px; font-weight:800; white-space:nowrap; overflow:hidden;"><span id="h-name-disp">XXX</span>手帳</div>
-                <div style="font-size:9px; opacity:0.8;" id="h-desc-disp">財富自由，指日可待</div>
-            </div>
-            <div style="text-align:right;"><i data-lucide="banknote" style="width:20px;"></i></div>
+        <div class="h-date-row">
+            <span id="h-date-disp">2026/06/04 THU</span>
+            <div class="h-icon-top"><i data-lucide="banknote" style="width:20px;"></i></div>
         </div>
-        <div class="card" style="margin-top:20px; display:flex; align-items:center; gap:12px; color:#444;">
-            <div style="width:42px; height:42px; border-radius:12px; background:var(--theme-light); color:var(--theme); display:flex; align-items:center; justify-content:center;"><i data-lucide="piggy-bank"></i></div>
-            <div style="flex:1;">
-                <div style="font-size:11px; color:#999; font-weight:700;">當前存款總額</div>
-                <div style="font-size:26px;" class="amt-num" id="h-balance">$0</div>
-            </div>
+        <div class="h-title-row">
+            <div class="h-main-name"><span id="h-name-disp">XXX</span>手帳</div>
+            <div class="h-sub-desc" id="h-desc-disp">財富自由，指日可待</div>
+        </div>
+        <div class="balance-card">
+            <div class="piggy-wrap"><i data-lucide="piggy-bank" style="width:32px; height:32px;"></i></div>
+            <div style="font-size:12px; color:#999; font-weight:700; margin-bottom:2px;">當前存款總額</div>
+            <div style="font-size:28px; color:var(--text);" class="num-font" id="h-balance">$0</div>
         </div>
     </div>
+    
     <div class="scroll-area">
-        <div class="card">
-            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:5px;"><span>本月預算進度</span><span id="h-budget-pct" style="color:var(--theme);">0%</span></div>
-            <div style="height:8px; background:#F0F0F0; border-radius:10px; overflow:hidden;"><div id="h-budget-fill" style="height:100%; background:var(--theme); transition:0.5s;"></div></div>
-            <div id="h-budget-text" style="font-size:10px; color:#AAA; margin-top:5px; font-weight:700;">載入中...</div>
+        <div class="card-v">
+            <div style="text-align:center; font-size:14px; font-weight:800; margin-bottom:5px;">本月結餘進度</div>
+            <div class="prog-bg"><div id="h-budget-fill" class="prog-fill"></div></div>
+            <div id="h-budget-text" style="text-align:center; font-size:11px; color:#999; font-weight:700;">載入中...</div>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-            <div class="card" style="margin:0; text-align:center;"><div style="font-size:10px; color:#999; font-weight:800;">現金支出</div><div style="font-size:18px; color:#ff6b6b;" class="amt-num" id="h-cash">$0</div></div>
-            <div class="card" style="margin:0; text-align:center;"><div style="font-size:10px; color:#999; font-weight:800;">信用支出</div><div style="font-size:18px; color:#ff6b6b;" class="amt-num" id="h-card">$0</div></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:15px;">
+            <div class="card-v" style="margin:0; text-align:center;"><div style="font-size:11px; color:#999; font-weight:700;">現金支出</div><div style="font-size:18px; color:#ff6b6b;" class="num-font" id="h-cash">$0</div></div>
+            <div class="card-v" style="margin:0; text-align:center;"><div style="font-size:11px; color:#999; font-weight:700;">信用支出</div><div style="font-size:18px; color:#ff6b6b;" class="num-font" id="h-card">$0</div></div>
         </div>
         <div style="font-weight:800; margin-bottom:10px; font-size:14px; color:#666;">📋 近期紀錄</div>
         <div id="h-list"></div>
@@ -130,10 +123,20 @@ body { height: 100dvh; width: 100%; background: var(--bg); font-family: 'Noto Sa
         </div>
     </div>
     <div class="scroll-area">
-        <div class="card" id="hist-cal-box" style="padding:10px;"></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-            <div class="card" style="margin:0; display:flex; align-items:center; gap:8px;"><i data-lucide="trending-down" style="color:#ff6b6b; width:18px;"></i><div style="font-size:11px; font-weight:700;">當月支出<br><b id="hist-exp" class="amt-num">$0</b></div></div>
-            <div class="card" style="margin:0; display:flex; align-items:center; gap:8px;"><i data-lucide="trending-up" style="color:#4ecb71; width:18px;"></i><div style="font-size:11px; font-weight:700;">當月收入<br><b id="hist-inc" class="amt-num">$0</b></div></div>
+        <div class="card-v">
+            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:5px;"><span>本月結餘進度</span><span id="hist-net-val">$0</span></div>
+            <div class="prog-bg"><div id="hist-net-fill" class="prog-fill"></div></div>
+            <div id="hist-cal-box" style="margin-top:10px;"></div>
+        </div>
+        <div class="hist-summary-grid">
+            <div class="hist-sum-box">
+                <div style="font-size:10px; color:#999; font-weight:700; margin-bottom:4px;">當月支出</div>
+                <div id="hist-exp" class="num-font" style="color:#ff6b6b; font-size:18px;">$0</div>
+            </div>
+            <div class="hist-sum-box">
+                <div style="font-size:10px; color:#999; font-weight:700; margin-bottom:4px;">當月收入</div>
+                <div id="hist-inc" class="num-font" style="color:#4ecb71; font-size:18px;">$0</div>
+            </div>
         </div>
         <div id="hist-list"></div>
     </div>
@@ -144,18 +147,20 @@ body { height: 100dvh; width: 100%; background: var(--bg); font-family: 'Noto Sa
     <div class="header-bg" style="height:70px; padding-top:15px; text-align:center;"><span style="font-weight:800;">數據分析</span></div>
     <div class="scroll-area">
         <div id="c-year-sel" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:12px;"></div>
-        <div id="c-annual-net" class="card" style="background:var(--theme); color:white; text-align:center; font-weight:800;">年度總結餘: $0</div>
-        <div class="card" style="text-align:center; position:relative;">
-            <canvas id="chart-pie" style="max-height:160px;"></canvas>
-            <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -60%); pointer-events:none; text-align:center;">
-                <div id="c-pie-m" style="font-size:18px; font-weight:800; color:var(--theme);">6月</div>
-                <div style="font-size:10px; color:#BBB; font-weight:700;">支出</div>
+        <div id="c-annual-net" class="card-v" style="background:var(--theme); color:white; text-align:center; font-weight:800; font-size:16px;">年度總結餘: $0</div>
+        <div class="card-v" style="text-align:center; position:relative;">
+            <div style="position:relative; height:180px; display:flex; justify-content:center; align-items:center;">
+                <canvas id="chart-pie"></canvas>
+                <div style="position:absolute; text-align:center; pointer-events:none; top:50%; transform:translateY(-50%);">
+                    <div id="c-pie-m" style="font-size:22px; font-weight:800; color:var(--theme);">6月</div>
+                    <div style="font-size:10px; color:#BBB; font-weight:700;">支出</div>
+                </div>
             </div>
-            <div id="c-total-v" class="amt-num" style="margin-top:10px; font-size:18px;">$0</div>
+            <div id="c-total-v" class="num-font" style="margin-top:15px; font-size:20px; color:var(--text);">$0</div>
         </div>
         <div id="c-ranking"></div>
         <div style="font-weight:800; margin:20px 0 10px; color:#666;">📈 年度支出趨勢</div>
-        <div class="card"><canvas id="chart-trend" style="max-height:160px;"></canvas></div>
+        <div class="card-v" style="height:220px;"><canvas id="chart-trend"></canvas></div>
         <div style="font-weight:800; margin:20px 0 10px; color:#666;">📊 每月結餘</div>
         <div id="c-monthly-list"></div>
     </div>
@@ -165,19 +170,21 @@ body { height: 100dvh; width: 100%; background: var(--bg); font-family: 'Noto Sa
   <div class="screen" id="pg-settings">
     <div class="header-bg" style="height:70px; padding-top:15px; text-align:center;"><span style="font-weight:800;">設定</span></div>
     <div class="scroll-area">
-        <div class="card">
-            <div style="font-weight:800; font-size:13px; margin-bottom:12px; color:var(--theme);">主題色彩</div>
-            <div style="display:flex; gap:15px; margin-bottom:20px; align-items:center;">
-                <div class="color-circle" onclick="setTheme('#c38ed5')" style="background:#c38ed5;"></div>
-                <div class="color-circle" onclick="setTheme('#74b9ff')" style="background:#74b9ff;"></div>
-                <div class="color-circle" onclick="setTheme('#55efc4')" style="background:#55efc4;"></div>
-                <div class="color-picker-wrap"><input type="color" id="s-color" onchange="setTheme(this.value)"></div>
+        <div class="card-v">
+            <div style="font-weight:800; font-size:13px; margin-bottom:15px; color:var(--theme);">自定義主題色</div>
+            <div style="display:flex; gap:15px; margin-bottom:20px; align-items:center; justify-content:center;">
+                <div class="color-circle" onclick="setTheme('#c38ed5')" style="width:34px;height:34px;border-radius:50%;background:#c38ed5;border:3px solid white;box-shadow:0 0 5px rgba(0,0,0,0.1);"></div>
+                <div class="color-circle" onclick="setTheme('#74b9ff')" style="width:34px;height:34px;border-radius:50%;background:#74b9ff;border:3px solid white;box-shadow:0 0 5px rgba(0,0,0,0.1);"></div>
+                <div class="color-circle" onclick="setTheme('#55efc4')" style="width:34px;height:34px;border-radius:50%;background:#55efc4;border:3px solid white;box-shadow:0 0 5px rgba(0,0,0,0.1);"></div>
+                <div style="width:34px;height:34px;border-radius:50%;overflow:hidden;border:3px solid white;box-shadow:0 0 5px rgba(0,0,0,0.1);position:relative;">
+                    <input type="color" id="s-color" onchange="setTheme(this.value)" style="position:absolute;top:-5px;left:-5px;width:50px;height:50px;border:none;">
+                </div>
             </div>
-            <div style="margin-bottom:12px;"><label style="font-size:11px; color:#999; font-weight:800;">手帳姓名</label><input type="text" id="s-name" class="card" style="width:100%; border:1px solid #EEE; padding:12px; margin:5px 0; font-weight:700;"></div>
-            <div style="margin-bottom:12px;"><label style="font-size:11px; color:#999; font-weight:800;">描述文字</label><input type="text" id="s-desc" class="card" style="width:100%; border:1px solid #EEE; padding:12px; margin:5px 0; font-weight:700;"></div>
-            <div style="margin-bottom:12px;"><label style="font-size:11px; color:#999; font-weight:800;">每月預算</label><input type="number" id="s-budget" class="card" style="width:100%; border:1px solid #EEE; padding:12px; margin:5px 0; font-weight:700;"></div>
-            <div style="margin-bottom:12px;"><label style="font-size:11px; color:#999; font-weight:800;">初始存款</label><input type="number" id="s-balance" class="card" style="width:100%; border:1px solid #EEE; padding:12px; margin:5px 0; font-weight:700;"></div>
-            <button onclick="saveS()" style="width:100%; padding:15px; background:var(--theme); color:white; border:none; border-radius:15px; font-weight:800;">儲存設定</button>
+            <div style="margin-bottom:12px;"><label style="font-size:11px; color:#999; font-weight:800;">手帳姓名</label><input type="text" id="s-name" style="width:100%; border:1px solid #EEE; padding:12px; border-radius:12px; margin-top:5px; outline:none; font-family:inherit; font-weight:700;"></div>
+            <div style="margin-bottom:12px;"><label style="font-size:11px; color:#999; font-weight:800;">描述文字</label><input type="text" id="s-desc" style="width:100%; border:1px solid #EEE; padding:12px; border-radius:12px; margin-top:5px; outline:none; font-family:inherit; font-weight:700;"></div>
+            <div style="margin-bottom:12px;"><label style="font-size:11px; color:#999; font-weight:800;">每月預算</label><input type="number" id="s-budget" style="width:100%; border:1px solid #EEE; padding:12px; border-radius:12px; margin-top:5px; outline:none; font-family:inherit; font-weight:700;"></div>
+            <div style="margin-bottom:15px;"><label style="font-size:11px; color:#999; font-weight:800;">初始存款調整</label><input type="number" id="s-balance" style="width:100%; border:1px solid #EEE; padding:12px; border-radius:12px; margin-top:5px; outline:none; font-family:inherit; font-weight:700;"></div>
+            <button onclick="saveS()" style="width:100%; padding:16px; background:var(--theme); color:white; border:none; border-radius:18px; font-weight:800; font-family:inherit;">儲存設定</button>
         </div>
     </div>
   </div>
@@ -191,64 +198,80 @@ body { height: 100dvh; width: 100%; background: var(--bg); font-family: 'Noto Sa
   <button class="fab" onclick="openA()"><i data-lucide="plus"></i></button>
 </div>
 
-<!-- ════════ 彈窗 (佈局極致優化) ════════ -->
+<!-- 彈窗 -->
 <div class="modal-overlay" id="modal-a">
   <div class="modal-sheet">
     <div class="modal-header">
-        <div style="width:60px;"><button id="btn-del" onclick="delItem()" style="color:#ff6b6b; background:none; border:none; font-weight:800; display:none; font-size:13px;">刪除</button></div>
-        <span style="font-weight:800; color:var(--theme);" id="modal-t">新增紀錄</span>
+        <div style="width:60px;"><button id="btn-del" onclick="delItem()" style="color:#ff6b6b; background:none; border:none; font-weight:800; display:none; font-size:14px; font-family:inherit;">刪除</button></div>
+        <span style="font-weight:800; color:var(--theme); font-size:16px;" id="modal-t">新增紀錄</span>
         <div style="width:60px; text-align:right;"><button onclick="closeA()" style="background:none; border:none; color:#DDD;"><i data-lucide="x"></i></button></div>
     </div>
     
     <div style="padding:15px 20px; flex-shrink:0;">
         <div style="display:flex; background:#F2F2F7; padding:4px; border-radius:12px; margin-bottom:10px;">
-            <button id="t-exp" onclick="setT('expense')" style="flex:1; padding:8px; border:none; border-radius:10px; font-weight:800; font-size:13px;">支出</button>
-            <button id="t-inc" onclick="setT('income')" style="flex:1; padding:8px; border:none; border-radius:10px; font-weight:800; font-size:13px; background:none; color:#AAA;">收入</button>
+            <button id="t-exp" onclick="setT('expense')" style="flex:1; padding:8px; border:none; border-radius:10px; font-weight:800; font-size:13px; font-family:inherit;">支出</button>
+            <button id="t-inc" onclick="setT('income')" style="flex:1; padding:8px; border:none; border-radius:10px; font-weight:800; font-size:13px; background:none; color:#AAA; font-family:inherit;">收入</button>
         </div>
         <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <button id="a-cash" onclick="setA('現金')" style="flex:1; padding:10px; border:1.5px solid #EEE; border-radius:12px; background:white; font-size:12px; font-weight:800;">現金</button>
-            <button id="a-card" onclick="setA('信用卡')" style="flex:1; padding:10px; border:1.5px solid #EEE; border-radius:12px; background:white; font-size:12px; font-weight:800;">信用卡</button>
+            <button id="a-cash" onclick="setA('現金')" style="flex:1; padding:10px; border:1.5px solid #EEE; border-radius:12px; background:white; font-size:12px; font-weight:800; font-family:inherit;">現金</button>
+            <button id="a-card" onclick="setA('信用卡')" style="flex:1; padding:10px; border:1.5px solid #EEE; border-radius:12px; background:white; font-size:12px; font-weight:800; font-family:inherit;">信用卡</button>
         </div>
-        <div id="disp-amt" class="amt-num" style="text-align:center; font-size:42px; color:var(--theme); padding:5px 0;">0</div>
+        <div id="disp-amt" class="num-font" style="text-align:center; font-size:42px; color:var(--theme); padding:5px 0;">0</div>
         <div style="display:flex; gap:8px;">
-            <input type="text" id="n-input" placeholder="備註..." style="flex:1; padding:12px; background:#F2F2F7; border:none; border-radius:12px; outline:none; font-size:14px; font-weight:700;">
-            <input type="date" id="d-input" style="width:125px; padding:12px; background:#F2F2F7; border:none; border-radius:12px; outline:none; font-size:11px; font-weight:700;">
+            <input type="text" id="n-input" placeholder="備註..." style="flex:1; padding:12px; background:#F2F2F7; border:none; border-radius:12px; outline:none; font-size:14px; font-weight:700; font-family:inherit;">
+            <input type="date" id="d-input" style="width:125px; padding:12px; background:#F2F2F7; border:none; border-radius:12px; outline:none; font-size:11px; font-weight:700; font-family:inherit;">
         </div>
     </div>
 
-    <div class="modal-body"><div class="cat-grid" id="cat-grid"></div></div>
+    <div style="flex:1; overflow-y:auto;"><div class="cat-grid" id="cat-grid"></div></div>
 
     <div style="flex-shrink:0; background:#F8F8F8; padding:10px 15px 15px;">
-        <div class="k-grid">
-            <button class="k-btn" onclick="p('7')">7</button><button class="k-btn" onclick="p('8')">8</button><button class="k-btn" onclick="p('9')">9</button><button class="k-btn" onclick="p('del')" style="color:var(--theme);"><i data-lucide="delete" style="width:20px;margin:auto;"></i></button>
-            <button class="k-btn" onclick="p('4')">4</button><button class="k-btn" onclick="p('5')">5</button><button class="k-btn" onclick="p('6')">6</button><button class="k-btn" onclick="p('+')" style="color:var(--theme);">+</button>
-            <button class="k-btn" onclick="p('1')">1</button><button class="k-btn" onclick="p('2')">2</button><button class="k-btn" onclick="p('3')">3</button><button class="k-btn k-ok" onclick="saveR()">OK</button>
-            <button class="k-btn" onclick="p('0')" style="grid-column: span 2;">0</button><button class="k-btn" onclick="p('.')">.</button>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
+            <button class="key" onclick="p('7')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">7</button>
+            <button class="key" onclick="p('8')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">8</button>
+            <button class="key" onclick="p('9')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">9</button>
+            <button class="key" onclick="p('del')" style="background:white; border:none; height:48px; border-radius:12px; color:var(--theme);"><i data-lucide="delete" style="width:20px;margin:auto;"></i></button>
+            <button class="key" onclick="p('4')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">4</button>
+            <button class="key" onclick="p('5')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">5</button>
+            <button class="key" onclick="p('6')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">6</button>
+            <button class="key" onclick="p('+')" style="background:white; border:none; height:48px; border-radius:12px; font-size:24px; font-weight:800; color:var(--theme);">+</button>
+            <button class="key" onclick="p('1')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">1</button>
+            <button class="key" onclick="p('2')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">2</button>
+            <button class="key" onclick="p('3')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">3</button>
+            <button onclick="saveR()" style="background:var(--theme); color:white; border:none; border-radius:12px; font-weight:800; grid-row:span 2; height:104px;">OK</button>
+            <button class="key" onclick="p('0')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text); grid-column:span 2;">0</button>
+            <button class="key" onclick="p('.')" style="background:white; border:none; height:48px; border-radius:12px; font-size:20px; font-weight:800; color:var(--text);">.</button>
         </div>
     </div>
   </div>
 </div>
 
 <script>
-// --- 資料架構 ---
 const CATS = [{id:'food',name:'飲食',icon:'utensils'},{id:'bus',name:'交通',icon:'bus'},{id:'shop',name:'購物',icon:'shopping-bag'},{id:'home',name:'日用',icon:'home'},{id:'play',name:'娛樂',icon:'gamepad-2'},{id:'med',name:'醫療',icon:'stethoscope'},{id:'social',name:'社交',icon:'glass-water'},{id:'gift',name:'禮物',icon:'gift'},{id:'phone',name:'通訊',icon:'smartphone'},{id:'cloth',name:'服飾',icon:'shirt'},{id:'tax',name:'稅金',icon:'banknote'},{id:'other',name:'其他',icon:'more-horizontal'}];
-let records = JSON.parse(localStorage.getItem('money_v14') || '[]');
-let config = JSON.parse(localStorage.getItem('cfg_v14') || '{"theme":"#c38ed5","balance":0,"name":"XXX","desc":"財富自由，指日可待","budget":20000}');
+let records = JSON.parse(localStorage.getItem('money_v15') || '[]');
+let config = JSON.parse(localStorage.getItem('cfg_v15') || '{"theme":"#c38ed5","balance":0,"name":"XXX","desc":"財富自由，指日可待","budget":20000}');
 let state = { id: null, type: 'expense', acc: '現金', cat: 'food', amt: "" }, charts = { pie: null, trend: null };
 let hY = new Date().getFullYear(), hM = new Date().getMonth() + 1, repY = new Date().getFullYear();
 
-const fmt = (n) => '$' + Math.abs(n).toLocaleString('en');
+const fmt = (n) => '$' + Math.abs(n).toLocaleString();
 
-// --- 主題切換 ---
+// --- 同色系配色生成 (修正圓餅圖換色) ---
+function generatePalette(base) {
+    const r = parseInt(base.slice(1,3), 16), g = parseInt(base.slice(3,5), 16), b = parseInt(base.slice(5,7), 16);
+    return [
+        base,
+        `rgba(${r},${g},${b},0.8)`, `rgba(${r},${g},${b},0.6)`, `rgba(${r},${g},${b},0.4)`,
+        `rgba(${r},${g},${b},0.2)`, '#D7A8E8', '#F3E5F5', '#E0D0EC'
+    ];
+}
+
 function setTheme(c) {
     config.theme = c;
     document.documentElement.style.setProperty('--theme', c);
     document.documentElement.style.setProperty('--theme-light', c + '26');
-    document.documentElement.style.setProperty('--theme-dark', c); // 簡化邏輯
     if(document.getElementById('pg-chart').classList.contains('active')) renderChart();
 }
 
-// --- 介面導航 ---
 function goP(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('pg-' + id).classList.add('active');
@@ -257,13 +280,12 @@ function goP(id) {
     if(id==='home') renderHome();
     if(id==='history') renderHist();
     if(id==='chart') renderChart();
-    if(id==='settings') { document.getElementById('s-name').value = config.name; document.getElementById('s-desc').value = config.desc; document.getElementById('s-balance').value = config.balance; document.getElementById('s-budget').value = config.budget; }
 }
 
 function renderHome() {
     const today = new Date();
     const week = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-    document.getElementById('h-date').innerHTML = `${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()}<br>${week[today.getDay()]}`;
+    document.getElementById('h-date-disp').innerText = `${today.getFullYear()}/${today.getMonth()+1}/${today.getDate()} ${week[today.getDay()]}`;
     document.getElementById('h-name-disp').innerText = config.name;
     document.getElementById('h-desc-disp').innerText = config.desc;
     const inc = records.filter(r => r.type==='income').reduce((a,b)=>a+b.amt, 0);
@@ -287,14 +309,13 @@ function renderHome() {
 
 function renderRow(r, isH = false) {
     const c = CATS.find(x => x.id===r.cat) || CATS[0];
-    return `<div class="record-item" style="background:white; border-radius:18px; padding:12px; display:flex; align-items:center; gap:12px; margin-bottom:8px; box-shadow:0 2px 8px rgba(0,0,0,0.02);" onclick="${isH ? `openE(${r.id})`:''}">
+    return `<div class="list-item" style="background:white; border-radius:18px; padding:12px; display:flex; align-items:center; gap:12px; margin-bottom:8px; box-shadow:0 2px 8px rgba(0,0,0,0.02);" onclick="${isH ? `openE(${r.id})`:''}">
         <div style="width:40px;height:40px;border-radius:12px;background:var(--theme-light);display:flex;align-items:center;justify-content:center;color:var(--theme);"><i data-lucide="${c.icon}" style="width:18px;"></i></div>
         <div style="flex:1;"><div style="font-size:14px;font-weight:700;">${r.note}</div><div style="font-size:10px;color:#AAA;">${r.date} | ${r.acc}</div></div>
-        <div style="font-weight:800; font-size:15px; color:${r.type==='expense'?'#ff6b6b':'#4ecb71'}" class="amt-num">${r.type==='expense'?'-':'+'}${fmt(r.amt)}</div>
+        <div style="font-weight:800; font-size:16px; color:${r.type==='expense'?'#ff6b6b':'#4ecb71'}" class="num-font">${r.type==='expense'?'-':'+'}${fmt(r.amt)}</div>
     </div>`;
 }
 
-// --- 歷史 ---
 function changeHM(dir) { hM += dir; if(hM>12){hM=1;hY++;} if(hM<1){hM=12;hY--;} renderHist(); }
 function renderHist() {
     const ym = `${hY}-${String(hM).padStart(2,'0')}`;
@@ -304,44 +325,46 @@ function renderHist() {
     const i = mRecs.filter(r=>r.type==='income').reduce((a,b)=>a+b.amt,0);
     document.getElementById('hist-exp').innerText = fmt(e);
     document.getElementById('hist-inc').innerText = fmt(i);
+    document.getElementById('hist-net-val').innerText = fmt(i-e);
+    document.getElementById('hist-net-fill').style.width = Math.min(100, Math.max(0, (e/config.budget)*100)) + '%';
+
     const days = new Date(hY, hM, 0).getDate();
     const first = new Date(hY, hM-1, 1).getDay();
     let h = `<div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;">`;
-    ['日','一','二','三','四','五','六'].forEach(d => h += `<div class="cal-cell h">${d}</div>`);
+    ['日','一','二','三','四','五','六'].forEach(d => h += `<div style="font-size:10px;color:#CCC;padding-bottom:5px;">${d}</div>`);
     for(let k=0; k<first; k++) h += `<div></div>`;
     for(let d=1; d<=days; d++) {
         const dS = `${hY}-${String(hM).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        h += `<div class="cal-cell">${d}${mRecs.some(r=>r.date===dS)?'<div class="cal-dot"></div>':''}</div>`;
+        h += `<div style="padding:8px 0;font-size:12px;position:relative;font-weight:700;">${d}${mRecs.some(r=>r.date===dS)?'<div class="cal-dot"></div>':''}</div>`;
     }
     document.getElementById('hist-cal-box').innerHTML = h + `</div>`;
     document.getElementById('hist-list').innerHTML = mRecs.sort((a,b)=>b.date.localeCompare(a.date)).map(r=>renderRow(r, true)).join('');
     lucide.createIcons();
 }
 
-// --- 分析 (功能修復) ---
 function renderChart() {
     const curY = new Date().getFullYear(), curM = new Date().getMonth()+1;
     const ySet = [...new Set(records.map(r=>parseInt(r.date.slice(0,4))))];
     if(!ySet.includes(curY)) ySet.push(curY);
     ySet.sort((a,b)=>b-a);
-    document.getElementById('c-year-sel').innerHTML = ySet.map(y => `<button class="k-btn" style="padding:0 15px; font-size:13px; background:${y===repY? 'var(--theme)':'#EEE'}; color:${y===repY? 'white':'#AAA'}" onclick="repY=${y};renderChart();">${y}</button>`).join('');
+    document.getElementById('c-year-sel').innerHTML = ySet.map(y => `<button style="padding:8px 15px; border-radius:12px; border:none; font-family:inherit; font-weight:800; background:${y===repY? 'var(--theme)':'#EEE'}; color:${y===repY? 'white':'#AAA'}" onclick="repY=${y};renderChart();">${y}</button>`).join('');
 
     const targetYM = `${curY}-${String(curM).padStart(2,'0')}`;
     const mE = records.filter(r => r.date.startsWith(targetYM) && r.type==='expense');
     const dataM = {}; mE.forEach(r => dataM[r.cat] = (dataM[r.cat]||0)+r.amt);
     const tE = Object.values(dataM).reduce((a,b)=>a+b, 0);
     document.getElementById('c-pie-m').innerText = curM + '月';
-    document.getElementById('c-total-v').innerText = `總計 ${fmt(tE)}`;
+    document.getElementById('c-total-v').innerText = fmt(tE);
 
     if(charts.pie) charts.pie.destroy();
     charts.pie = new Chart(document.getElementById('chart-pie'), {
         type:'doughnut',
-        data: { labels: Object.keys(dataM).map(id=>CATS.find(x=>x.id===id).name), datasets:[{data:Object.values(dataM).length?Object.values(dataM):[1], backgroundColor:[config.theme, '#9B59B6','#D7A8E8','#F3E5F5','#E0D0EC','#A5D6A7','#81C784','#FFF176'], borderWidth:0}] },
+        data: { labels: Object.keys(dataM).map(id=>CATS.find(x=>x.id===id).name), datasets:[{data:Object.values(dataM).length?Object.values(dataM):[1], backgroundColor:generatePalette(config.theme), borderWidth:0}] },
         options: { cutout:'78%', plugins:{legend:{display:false}} }
     });
 
     const sorted = Object.entries(dataM).sort((a,b)=>b[1]-a[1]);
-    document.getElementById('c-ranking').innerHTML = sorted.map(([id, v]) => `<div class="record-item" style="background:white; border-radius:15px; padding:12px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;"><div style="font-weight:700; font-size:14px;">${CATS.find(x=>x.id===id).name} <span style="font-size:10px;color:#BBB;">${Math.round(v/tE*100)}%</span></div><div style="font-weight:800;color:var(--theme);" class="amt-num">${fmt(v)}</div></div>`).join('');
+    document.getElementById('c-ranking').innerHTML = sorted.map(([id, v]) => `<div class="list-item"><div style="flex:1;font-weight:700;">${CATS.find(x=>x.id===id).name} <span style="font-size:10px;color:#BBB;">${Math.round(v/tE*100)}%</span></div><div style="font-weight:800;color:var(--theme);" class="num-font">${fmt(v)}</div></div>`).join('');
 
     let repH = "", netY = 0, trendD = [], trendL = [];
     for(let m=12; m>=1; m--) {
@@ -354,15 +377,14 @@ function renderChart() {
         const pR = records.filter(r=>r.date.startsWith(pYM)), pe = pR.filter(r=>r.type==='expense').reduce((a,b)=>a+b.amt,0), pi = pR.filter(r=>r.type==='income').reduce((a,b)=>a+b.amt,0);
         if(pe>0) eg = ((me-pe)/pe*100).toFixed(0) + '%';
         if(pi>0) ig = ((mi-pi)/pi*100).toFixed(0) + '%';
-
-        repH += `<div class="report-item">
+        repH += `<div class="report-card">
             <div style="font-weight:800; font-size:14px;">${repY}/${String(m).padStart(2,'0')}</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
-                <div><div style="font-size:10px;color:#AAA;">支出</div><div style="font-size:13px;font-weight:800;">${fmt(me)}<span class="pill ${eg.includes('-')?'pill-down':'pill-up'}">${eg}</span></div></div>
-                <div><div style="font-size:10px;color:#AAA;">收入</div><div style="font-size:13px;font-weight:800;">${fmt(mi)}<span class="pill ${ig.includes('-')?'pill-up':'pill-down'}">${ig}</span></div></div>
+                <div><div style="font-size:10px;color:#AAA;font-weight:700;">支出</div><div style="font-size:13px;font-weight:800;">${fmt(me)}<span class="pill ${eg.includes('-')?'pill-down':'pill-up'}">${eg}</span></div></div>
+                <div><div style="font-size:10px;color:#AAA;font-weight:700;">收入</div><div style="font-size:13px;font-weight:800;">${fmt(mi)}<span class="pill ${ig.includes('-')?'pill-up':'pill-down'}">${ig}</span></div></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px dashed #EEE;">
-                <span style="font-size:11px;color:#999;">結餘</span><b style="color:${(mi-me)>=0?'#4ECB71':'#FF6B6B'}" class="amt-num">${fmt(mi-me)}</b>
+                <span style="font-size:11px;color:#999;font-weight:700;">結餘</span><b style="color:${(mi-me)>=0?'#4ECB71':'#FF6B6B'}" class="num-font">${fmt(mi-me)}</b>
             </div>
         </div>`;
     }
@@ -370,16 +392,19 @@ function renderChart() {
     document.getElementById('c-annual-net').innerText = `${repY} 年度總結餘: ${fmt(netY)}`;
     
     if(charts.trend) charts.trend.destroy();
-    charts.trend = new Chart(document.getElementById('chart-trend'), { type:'line', data:{labels:trendL.reverse(), datasets:[{data:trendD.reverse(), borderColor:config.theme, tension:0.4, pointRadius:0, borderWidth:3}]}, options:{plugins:{legend:{display:false}}, scales:{y:{display:false}, x:{grid:{display:false}}}} });
+    charts.trend = new Chart(document.getElementById('chart-trend'), { 
+        type:'line', 
+        data:{labels:trendL.reverse(), datasets:[{data:trendD.reverse(), borderColor:config.theme, tension:0.4, borderWidth:3, fill:true, backgroundColor:config.theme+'22'}]}, 
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{display:true, grid:{color:'#F0F0F0'}}, x:{grid:{display:false}}}} 
+    });
 }
 
-// --- 記帳操作 ---
 function openA() { state={id:null,type:'expense',acc:'現金',cat:'food',amt:""}; document.getElementById('modal-t').innerText="新增紀錄"; document.getElementById('btn-del').style.display="none"; document.getElementById('n-input').value=""; document.getElementById('d-input').value=new Date().toISOString().slice(0,10); syncU(); document.getElementById('modal-a').classList.add('open'); }
 function openE(id) { const r=records.find(x=>x.id===id); if(!r)return; state={id,type:r.type,acc:r.acc,cat:r.cat,amt:r.amt.toString()}; document.getElementById('modal-t').innerText="編輯紀錄"; document.getElementById('btn-del').style.display="block"; document.getElementById('n-input').value=r.note; document.getElementById('d-input').value=r.date; syncU(); document.getElementById('modal-a').classList.add('open'); }
 function syncU() {
     document.getElementById('disp-amt').innerText = state.amt || "0";
     setT(state.type); setA(state.acc);
-    document.getElementById('cat-grid').innerHTML = CATS.map(c => `<div class="cat-btn ${state.cat===c.id?'active':''}" onclick="state.cat='${c.id}';syncU();"><div class="cat-sq"><i data-lucide="${c.icon}" style="width:20px;"></i></div><div class="cat-txt">${c.name}</div></div>`).join('');
+    document.getElementById('cat-grid').innerHTML = CATS.map(c => `<div class="cat-btn ${state.cat===c.id?'active':''}" onclick="state.cat='${c.id}';syncU();"><div class="cat-sq" style="border-radius:12px; width:46px; height:46px;"><i data-lucide="${c.icon}" style="width:20px;"></i></div><div style="font-size:10px;font-weight:800;color:#666;">${c.name}</div></div>`).join('');
     lucide.createIcons();
 }
 function setT(t) { state.type=t; document.getElementById('t-exp').style.background=t==='expense'?'white':'none'; document.getElementById('t-exp').style.color=t==='expense'?'var(--theme)':'#AAA'; document.getElementById('t-inc').style.background=t==='income'?'white':'none'; document.getElementById('t-inc').style.color=t==='income'?'var(--theme)':'#AAA'; }
@@ -392,11 +417,11 @@ function saveR() {
         const val = parseFloat(eval(state.amt.replace(/[^0-9+.]/g,'')));
         const d = { id: state.id||Date.now(), amt: val, type: state.type, acc: state.acc, cat: state.cat, note: document.getElementById('n-input').value||CATS.find(x=>x.id===state.cat).name, date: document.getElementById('d-input').value };
         if(state.id) records = records.map(r=>r.id===state.id?d:r); else records.push(d);
-        localStorage.setItem('money_v14', JSON.stringify(records)); closeA(); renderHome();
+        localStorage.setItem('money_v15', JSON.stringify(records)); closeA(); renderHome();
     } catch(e){ alert('金額有誤'); }
 }
-function delItem() { if(confirm('刪除？')){ records=records.filter(r=>r.id!==state.id); localStorage.setItem('money_v14', JSON.stringify(records)); closeA(); renderHome(); renderHist(); } }
-function saveS() { config.name=document.getElementById('s-name').value; config.desc=document.getElementById('s-desc').value; config.balance=parseFloat(document.getElementById('s-balance').value)||0; config.budget=parseFloat(document.getElementById('s-budget').value)||20000; localStorage.setItem('cfg_v14', JSON.stringify(config)); alert('儲存成功'); renderHome(); }
+function delItem() { if(confirm('刪除？')){ records=records.filter(r=>r.id!==state.id); localStorage.setItem('money_v15', JSON.stringify(records)); closeA(); renderHome(); renderHist(); } }
+function saveS() { config.name=document.getElementById('s-name').value; config.desc=document.getElementById('s-desc').value; config.balance=parseFloat(document.getElementById('s-balance').value)||0; config.budget=parseFloat(document.getElementById('s-budget').value)||20000; localStorage.setItem('cfg_v15', JSON.stringify(config)); alert('儲存成功'); renderHome(); }
 
 window.onload = () => { setTheme(config.theme); lucide.createIcons(); renderHome(); };
 </script>
