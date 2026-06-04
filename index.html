@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="淡紫記帳">
+<meta name="theme-color" content="#C38ED5">
 <title>淡紫記帳</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -14,272 +16,358 @@
   --purple-dark: #9B59B6;
   --purple-light: #F3E5F5;
   --bg: #FDF9FF;
+  --shadow: 0 8px 25px rgba(195,142,213,0.15);
   --safe-top: env(safe-area-inset-top);
   --safe-bottom: env(safe-area-inset-bottom);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body, html { 
-    height: 100%; width: 100%; 
-    background: var(--bg); 
-    font-family: 'Noto Sans TC', sans-serif;
-    color: #4A4A4A; overflow: hidden;
-}
+body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: #4A4A4A; }
+#app { height: 100dvh; display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; position: relative; overflow: hidden; }
 
-#app { 
-    height: 100vh; display: flex; flex-direction: column; 
-    position: relative; overflow: hidden;
-}
+/* ── 畫面與佈局 ── */
+.screen { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+.screen.active { display: flex; }
+.scroll-area { flex: 1; overflow-y: auto; padding: 10px 18px 100px; -webkit-overflow-scrolling: touch; }
 
-/* --- 頂部裝飾 --- */
-.header-visual {
-    background: linear-gradient(180deg, var(--purple) 0%, #D7A8E8 100%);
-    height: calc(180px + var(--safe-top));
-    padding-top: var(--safe-top);
-    border-radius: 0 0 45px 45px;
-    position: absolute; top: 0; width: 100%; z-index: 1;
-    display: flex; flex-direction: column; align-items: center;
+/* ── 頂部紫色漸層 (iPhone 12 mini 適配) ── */
+.header-bg {
+  background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+  color: white; padding: calc(15px + var(--safe-top)) 20px 30px;
+  border-radius: 0 0 35px 35px; box-shadow: 0 5px 20px rgba(155,89,182,0.2);
+  flex-shrink: 0;
 }
-.header-title { color: white; font-weight: 700; font-size: 18px; margin-top: 15px; }
+.header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.header-title { font-size: 19px; font-weight: 700; letter-spacing: 0.5px; }
 
-/* --- 懸浮統計卡片 --- */
+/* ── 統計卡片 ── */
 .summary-card {
-    background: white; border-radius: 28px; padding: 22px;
-    margin: calc(85px + var(--safe-top)) 18px 0;
-    box-shadow: 0 12px 35px rgba(195,142,213,0.18);
-    position: relative; z-index: 2;
-    display: flex; justify-content: space-around; text-align: center;
+  background: white; border-radius: 25px; padding: 18px;
+  margin: -25px 20px 10px; box-shadow: var(--shadow);
+  display: flex; justify-content: space-around; text-align: center;
 }
 .summary-item .label { font-size: 11px; color: #BBB; margin-bottom: 4px; }
-.summary-item .val { font-size: 18px; font-weight: 700; color: var(--purple); }
+.summary-item .val { font-size: 16px; font-weight: 700; color: var(--purple); }
 
-/* --- 內容區域 --- */
-.content-area { 
-    flex: 1; overflow-y: auto; 
-    padding: 20px 18px 120px; 
-    position: relative; z-index: 2;
-}
-.screen { display: none; }
-.screen.active { display: block; animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+/* ── 列表樣式 ── */
+.date-group { background: white; border-radius: 20px; margin-bottom: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid rgba(195,142,213,0.08); }
+.date-header { padding: 10px 15px; background: #FAF5FF; display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; color: var(--purple-dark); }
+.tx-item { display: flex; align-items: center; padding: 12px 15px; gap: 12px; border-bottom: 1px solid #F9F9F9; }
+.tx-icon { width: 42px; height: 42px; border-radius: 13px; background: var(--purple-pale); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.tx-info { flex: 1; }
+.tx-name { font-size: 14px; font-weight: 600; }
+.tx-note { font-size: 11px; color: #BBB; }
+.tx-amount { font-size: 16px; font-weight: 700; text-align: right; }
+.tx-amount.expense { color: #FF6B6B; }
+.tx-amount.income { color: #4ECB71; }
 
-/* --- 列表樣式 --- */
-.tx-group { margin-bottom: 20px; }
-.tx-date { font-size: 12px; color: #BBB; margin-left: 8px; margin-bottom: 8px; }
-.tx-item {
-    background: white; border-radius: 20px; padding: 14px 18px;
-    display: flex; align-items: center; margin-bottom: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-}
-.tx-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--purple-light); display: flex; align-items: center; justify-content: center; font-size: 22px; margin-right: 12px; }
-.tx-main { flex: 1; }
-.tx-name { font-size: 15px; font-weight: 600; }
-.tx-amount { font-weight: 700; font-size: 16px; }
-
-/* --- 底部導航 --- */
+/* ── 底部導航 ── */
 .bottom-nav {
-    position: fixed; bottom: 0; width: 100%;
-    background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
-    border-top: 1px solid #F0F0F0;
-    padding-bottom: var(--safe-bottom);
-    display: flex; justify-content: space-around; z-index: 100;
+  position: fixed; bottom: 0; width: 100%; max-width: 430px;
+  background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+  display: flex; padding-bottom: var(--safe-bottom);
+  border-top: 1px solid #EEE; z-index: 100;
 }
-.nav-item { padding: 12px 0; text-align: center; color: #CCC; flex: 1; transition: 0.3s; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 4px; color: #CCC; transition: 0.3s; }
 .nav-item.active { color: var(--purple); }
-.nav-icon { font-size: 22px; display: block; }
-.nav-text { font-size: 10px; font-weight: bold; margin-top: 4px; }
+.nav-icon { font-size: 22px; }
+.nav-text { font-size: 10px; font-weight: bold; }
 
-/* --- 圓形按鈕 --- */
+/* ── 懸浮按鈕 ── */
 .fab {
-    position: fixed; bottom: calc(85px + var(--safe-bottom)); right: 20px;
-    width: 60px; height: 60px; background: var(--purple);
-    border-radius: 30px; display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 32px; box-shadow: 0 10px 25px rgba(195,142,213,0.4);
-    z-index: 99; border: none;
+  position: fixed; bottom: calc(75px + var(--safe-bottom)); right: 20px;
+  width: 58px; height: 58px; border-radius: 30px;
+  background: var(--purple); color: white; font-size: 30px; border: none;
+  box-shadow: 0 8px 20px rgba(195,142,213,0.4); z-index: 90;
 }
 
-/* --- 彈窗 & 鍵盤 --- */
-.modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.3);
-    z-index: 200; display: none; align-items: flex-end;
-}
-.modal.open { display: flex; }
-.modal-sheet {
-    background: white; width: 100%; border-radius: 32px 32px 0 0;
-    padding-bottom: var(--safe-bottom); animation: slideUp 0.3s ease-out;
-}
+/* ── 彈窗與鍵盤 ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; align-items: flex-end; }
+.modal-overlay.open { display: flex; }
+.modal-sheet { background: white; width: 100%; border-radius: 30px 30px 0 0; animation: slideUp 0.3s ease; padding-bottom: var(--safe-bottom); overflow: hidden;}
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.numpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px 20px 20px; background: #F9F9F9; }
-.num-btn { background: white; border: none; height: 54px; border-radius: 16px; font-size: 20px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+.amount-display { text-align: center; font-size: 42px; padding: 15px; color: var(--purple); font-weight: 300; background: #FFF; }
+.numpad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; background: #F8F8F8; }
+.num-btn { background: white; border: none; height: 52px; border-radius: 12px; font-size: 18px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .num-btn:active { background: #EEE; }
-.btn-purple { background: var(--purple); color: white; }
+.btn-op { background: var(--purple-light); color: var(--purple); }
+.btn-save { background: var(--purple); color: white; grid-row: span 2; height: 112px; font-size: 16px; }
+
+/* ── 日曆與圖表自定義 ── */
+.chart-wrap { background: white; border-radius: 25px; margin: 10px 0; padding: 20px; box-shadow: var(--shadow); }
+.cal-wrap { background: white; border-radius: 25px; padding: 15px; box-shadow: var(--shadow); margin-bottom: 20px;}
 </style>
 </head>
 <body>
 
 <div id="app">
-    <!-- 頂部裝飾 -->
-    <div class="header-visual">
-        <div class="header-title">💜 我的記帳本</div>
+  <!-- ════════ 首頁 ════════ -->
+  <div class="screen active" id="screen-home">
+    <div class="header-bg">
+      <div class="header-row">
+        <span>🔍</span>
+        <div class="header-title">💜 默認帳本</div>
+        <span onclick="switchScreen('screen-cal')" style="cursor:pointer">📅</span>
+      </div>
+      <div style="display:flex; justify-content: space-between; align-items:center;">
+        <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; font-size:24px;">‹</button>
+        <span id="month-label" style="font-weight:700; font-size:16px;">2025年6月</span>
+        <button onclick="changeMonth(1)" style="background:none; border:none; color:white; font-size:24px;">›</button>
+      </div>
     </div>
-
-    <!-- 統計卡片 -->
     <div class="summary-card">
-        <div class="summary-item"><div class="label">總額</div><div class="val" id="sum-total">$0</div></div>
-        <div class="summary-item"><div class="label">收入</div><div class="val" id="sum-income" style="color:#4ECB71;">$0</div></div>
-        <div class="summary-item"><div class="label">支出</div><div class="val" id="sum-expense" style="color:#FF6B6B;">$0</div></div>
+      <div class="summary-item"><div class="label">總餘額</div><div class="val" id="sum-total">$0</div></div>
+      <div class="summary-item"><div class="label">本月收入</div><div class="val" id="sum-income" style="color:#4ECB71;">$0</div></div>
+      <div class="summary-item"><div class="label">本月支出</div><div class="val" id="sum-expense" style="color:#FF6B6B;">$0</div></div>
     </div>
+    <div class="scroll-area" id="tx-list">
+        <!-- 列表由 JS 注入 -->
+    </div>
+  </div>
 
-    <!-- 內容滾動區 -->
-    <div class="content-area">
-        <div class="screen active" id="screen-home">
-            <div id="tx-list"></div>
+  <!-- ════════ 圖表 ════════ -->
+  <div class="screen" id="screen-chart">
+    <div class="header-bg" style="height:140px;">
+      <div class="header-title">圖表分析</div>
+      <div style="display:flex; justify-content: center; gap: 15px; margin-top:10px;">
+         <button class="nav-text" onclick="chartType='expense'; renderChartContent();" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 12px; border-radius:15px;">支出</button>
+         <button class="nav-text" onclick="chartType='income'; renderChartContent();" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 12px; border-radius:15px;">收入</button>
+      </div>
+    </div>
+    <div class="scroll-area">
+        <div class="chart-wrap">
+            <canvas id="donut-canvas"></canvas>
         </div>
-        
-        <div class="screen" id="screen-chart">
-            <div style="background:white; border-radius:25px; padding:20px; box-shadow:0 10px 25px rgba(0,0,0,0.05);">
-                <canvas id="chart-canvas"></canvas>
-            </div>
-            <div id="chart-list" style="margin-top:20px;"></div>
-        </div>
+        <div id="chart-list"></div>
+    </div>
+  </div>
 
-        <div class="screen" id="screen-cal">
-            <div id="cal-view" style="background:white; border-radius:25px; padding:15px; box-shadow:0 10px 25px rgba(0,0,0,0.05); text-align:center;">
-                日曆功能加載中...
-            </div>
+  <!-- ════════ 日曆 ════════ -->
+  <div class="screen" id="screen-cal">
+    <div class="header-bg" style="height:120px;">
+        <div class="header-row">
+            <span onclick="switchScreen('screen-home')">‹ 返回</span>
+            <div class="header-title">日曆檢視</div>
+            <span></span>
         </div>
     </div>
+    <div class="scroll-area" id="cal-content">
+        <!-- 日曆由 JS 注入 -->
+    </div>
+  </div>
 
-    <!-- 底部導航 -->
-    <nav class="bottom-nav">
-        <div class="nav-item active" id="nav-home" onclick="switchTab('home')">
-            <span class="nav-icon">📒</span><span class="nav-text">記帳本</span>
-        </div>
-        <div class="nav-item" id="nav-chart" onclick="switchTab('chart')">
-            <span class="nav-icon">📊</span><span class="nav-text">圖表分析</span>
-        </div>
-        <div class="nav-item" id="nav-cal" onclick="switchTab('cal')">
-            <span class="nav-icon">📅</span><span class="nav-text">日曆</span>
-        </div>
-    </nav>
+  <!-- ════════ 底部導航 ════════ -->
+  <nav class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="switchScreen('screen-home')">
+      <span class="nav-icon">📒</span><span class="nav-text">記帳本</span>
+    </div>
+    <div class="nav-item" id="nav-chart" onclick="switchScreen('screen-chart')">
+      <span class="nav-icon">🥧</span><span class="nav-text">分析</span>
+    </div>
+    <div class="nav-item" id="nav-cal" onclick="switchScreen('screen-cal')">
+      <span class="nav-icon">📅</span><span class="nav-text">日曆</span>
+    </div>
+  </nav>
 
-    <button class="fab" onclick="openModal()">+</button>
+  <button class="fab" onclick="openAddModal()">+</button>
 </div>
 
-<!-- 記帳彈窗 -->
-<div class="modal" id="add-modal" onclick="if(event.target==this) closeModal()">
-    <div class="modal-sheet">
-        <div style="padding:15px; text-align:center; font-weight:700; color:var(--purple); border-bottom:1px solid #F0F0F0;">新增一筆</div>
-        <div id="display-amount" style="text-align:center; font-size:48px; padding:25px; color:var(--purple); font-weight:300;">0</div>
-        
-        <div class="numpad">
-            <button class="num-btn" onclick="pressNum('7')">7</button>
-            <button class="num-btn" onclick="pressNum('8')">8</button>
-            <button class="num-btn" onclick="pressNum('9')">9</button>
-            <button class="num-btn btn-purple" onclick="pressDelete()">⌫</button>
-            <button class="num-btn" onclick="pressNum('4')">4</button>
-            <button class="num-btn" onclick="pressNum('5')">5</button>
-            <button class="num-btn" onclick="pressNum('6')">6</button>
-            <button class="num-btn btn-purple" onclick="pressNum('+')">+</button>
-            <button class="num-btn" onclick="pressNum('1')">1</button>
-            <button class="num-btn" onclick="pressNum('2')">2</button>
-            <button class="num-btn" onclick="pressNum('3')">3</button>
-            <button class="num-btn btn-purple" style="grid-row:span 2; height:118px;" onclick="save()">OK</button>
-            <button class="num-btn" onclick="pressNum('0')" style="grid-column:span 2;">0</button>
-            <button class="num-btn" onclick="pressNum('.')">.</button>
-        </div>
+<!-- ════════ 記帳彈窗 ════════ -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal-sheet">
+    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #F0F0F0;">
+      <button onclick="closeAddModal()" style="background:none; border:none; font-size:18px; color:#CCC;">✕</button>
+      <div style="display:flex; gap:10px;">
+          <button id="type-exp" onclick="setAddType('expense')" style="color:var(--purple); font-weight:bold; background:none; border:none;">支出</button>
+          <button id="type-inc" onclick="setAddType('income')" style="color:#CCC; font-weight:bold; background:none; border:none;">收入</button>
+      </div>
+      <span style="width:20px;"></span>
     </div>
+    
+    <div id="amount-display" class="amount-display">0</div>
+    
+    <div class="numpad-grid">
+      <button class="num-btn" onclick="numInput('7')">7</button>
+      <button class="num-btn" onclick="numInput('8')">8</button>
+      <button class="num-btn" onclick="numInput('9')">9</button>
+      <button class="num-btn btn-op" onclick="numDelete()">⌫</button>
+      <button class="num-btn" onclick="numInput('4')">4</button>
+      <button class="num-btn" onclick="numInput('5')">5</button>
+      <button class="num-btn" onclick="numInput('6')">6</button>
+      <button class="num-btn btn-op" onclick="numInput('+')">+</button>
+      <button class="num-btn" onclick="numInput('1')">1</button>
+      <button class="num-btn" onclick="numInput('2')">2</button>
+      <button class="num-btn" onclick="numInput('3')">3</button>
+      <button class="num-btn btn-save" onclick="saveRecord()">OK</button>
+      <button class="num-btn" onclick="numInput('0')" style="grid-column: span 2;">0</button>
+      <button class="num-btn" onclick="numInput('.')">.</button>
+    </div>
+  </div>
 </div>
 
 <script>
-let records = JSON.parse(localStorage.getItem('lzb_v2') || '[]');
+// --- 核心資料 ---
+let records = JSON.parse(localStorage.getItem('lzb_records') || '[]');
+let currentMonth = new Date().toISOString().slice(0,7);
 let amountStr = "";
+let addType = 'expense';
 let donutChart = null;
+let chartType = 'expense';
 
-function switchTab(id) {
-    // 1. 隱藏所有螢幕
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    // 2. 取消所有導航高亮
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    
-    // 3. 顯示選定螢幕 (確保 ID 存在)
-    const targetScreen = document.getElementById('screen-' + id);
-    const targetNav = document.getElementById('nav-' + id);
-    
-    if (targetScreen) targetScreen.classList.add('active');
-    if (targetNav) targetNav.classList.add('active');
+function saveData() { localStorage.setItem('lzb_records', JSON.stringify(records)); }
+function fmt(n) { return '$' + Math.abs(n).toLocaleString('en',{minimumFractionDigits:0,maximumFractionDigits:2}); }
 
-    if (id === 'chart') renderChart();
+// --- 畫面切換 (修復 classList 錯誤) ---
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById(id);
+  if(target) target.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navMap = { 'screen-home': 'nav-home', 'screen-chart': 'nav-chart', 'screen-cal': 'nav-cal' };
+  const navId = navMap[id];
+  if(navId && document.getElementById(navId)) document.getElementById(navId).classList.add('active');
+  
+  if(id === 'screen-home') renderHome();
+  if(id === 'screen-chart') renderChartContent();
+  if(id === 'screen-cal') renderCal();
 }
 
-function openModal() { document.getElementById('add-modal').classList.add('open'); }
-function closeModal() { document.getElementById('add-modal').classList.remove('open'); }
-
-function pressNum(v) {
-    amountStr += v;
-    document.getElementById('display-amount').innerText = amountStr;
-}
-
-function pressDelete() {
-    amountStr = amountStr.slice(0, -1);
-    document.getElementById('display-amount').innerText = amountStr || "0";
-}
-
-function save() {
-    if(!amountStr) return;
-    try {
-        let finalAmt = eval(amountStr); // 處理運算
-        records.push({
-            id: Date.now(),
-            amount: parseFloat(finalAmt),
-            date: new Date().toISOString().slice(5, 10).replace('-', '/'),
-            type: 'expense'
-        });
-        localStorage.setItem('lzb_v2', JSON.stringify(records));
-        amountStr = "";
-        document.getElementById('display-amount').innerText = "0";
-        closeModal();
-        renderHome();
-    } catch(e) { alert('輸入錯誤'); amountStr = ""; }
-}
-
+// --- 首頁渲染 ---
 function renderHome() {
-    const list = document.getElementById('tx-list');
-    const income = records.filter(r => r.type === 'income').reduce((a, b) => a + b.amount, 0);
-    const expense = records.filter(r => r.type === 'expense').reduce((a, b) => a + b.amount, 0);
-    
-    document.getElementById('sum-income').innerText = '$' + income;
-    document.getElementById('sum-expense').innerText = '$' + expense;
-    document.getElementById('sum-total').innerText = '$' + (income - expense);
+  const [y, m] = currentMonth.split('-');
+  document.getElementById('month-label').innerText = `${y}年${parseInt(m)}月`;
 
-    list.innerHTML = records.slice().reverse().map(r => `
-        <div class="tx-item">
-            <div class="tx-icon">🍱</div>
-            <div class="tx-main">
-                <div class="tx-name">餐飲</div>
-                <div style="font-size:11px; color:#BBB;">${r.date}</div>
-            </div>
-            <div class="tx-amount" style="color:#FF6B6B;">-$${r.amount}</div>
-        </div>
-    `).join('');
+  const recs = records.filter(r => r.date.startsWith(currentMonth));
+  const income = recs.filter(r => r.type==='income').reduce((a,r)=>a+r.amount,0);
+  const expense = recs.filter(r => r.type==='expense').reduce((a,r)=>a+r.amount,0);
+  
+  document.getElementById('sum-income').innerText = fmt(income);
+  document.getElementById('sum-expense').innerText = fmt(expense);
+  document.getElementById('sum-total').innerText = fmt(income - expense);
+
+  const list = document.getElementById('tx-list');
+  list.innerHTML = "";
+  
+  if(recs.length === 0) {
+      list.innerHTML = `<div style="text-align:center; color:#CCC; margin-top:50px;">💜 尚無記錄，點擊 + 開始記帳</div>`;
+      return;
+  }
+
+  // 按日期分組
+  const groups = {};
+  recs.forEach(r => { groups[r.date] = groups[r.date] || []; groups[r.date].push(r); });
+  
+  Object.keys(groups).sort((a,b)=>b.localeCompare(a)).forEach(date => {
+      let html = `<div class="date-group"><div class="date-header"><span>${date}</span></div>`;
+      groups[date].forEach(r => {
+          html += `
+            <div class="tx-item">
+                <div class="tx-icon">🍱</div>
+                <div class="tx-info"><div class="tx-name">一般${r.type==='expense'?'支出':'收入'}</div><div class="tx-note">預設帳戶</div></div>
+                <div class="tx-amount ${r.type}">${r.type==='expense'?'-':'+'}${fmt(r.amount)}</div>
+            </div>`;
+      });
+      html += `</div>`;
+      list.innerHTML += html;
+  });
 }
 
-function renderChart() {
-    const ctx = document.getElementById('chart-canvas');
-    if(donutChart) donutChart.destroy();
-    const data = records.length ? records.map(r => r.amount) : [1];
-    donutChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            datasets: [{
-                data: data,
-                backgroundColor: ['#C38ED5', '#D7A8E8', '#F3E5F5', '#E0D0EC'],
-                borderWidth: 0
-            }]
-        },
-        options: { cutout: '75%' }
-    });
+// --- 記帳功能 ---
+function openAddModal() { document.getElementById('add-modal').classList.add('open'); }
+function closeAddModal() { document.getElementById('add-modal').classList.remove('open'); amountStr = ""; updateDisplay(); }
+function setAddType(t) { 
+    addType = t; 
+    document.getElementById('type-exp').style.color = t==='expense'?'var(--purple)':'#CCC';
+    document.getElementById('type-inc').style.color = t==='income'?'#4ECB71':'#CCC';
 }
+function numInput(v) { amountStr += v; updateDisplay(); }
+function numDelete() { amountStr = amountStr.slice(0,-1); updateDisplay(); }
+function updateDisplay() { document.getElementById('amount-display').innerText = amountStr || "0"; }
+
+function evalAmount(s) {
+    try { 
+        const clean = s.replace(/[^0-9+\-*/.]/g,'');
+        const res = Function('"use strict";return (' + clean + ')')();
+        return (isNaN(res) || res <= 0) ? null : Math.round(res*100)/100;
+    } catch { return null; }
+}
+
+function saveRecord() {
+  const finalAmt = evalAmount(amountStr);
+  if(!finalAmt) return;
+  
+  records.push({
+    id: Date.now().toString(),
+    amount: finalAmt,
+    type: addType,
+    date: new Date().toISOString().slice(0,10)
+  });
+  saveData();
+  closeAddModal();
+  renderHome();
+}
+
+function changeMonth(dir) {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + dir, 1);
+  currentMonth = d.toISOString().slice(0,7);
+  renderHome();
+}
+
+// --- 圖表分析 ---
+function renderChartContent() {
+  const ctx = document.getElementById('donut-canvas');
+  if(donutChart) donutChart.destroy();
+  
+  const recs = records.filter(r => r.date.startsWith(currentMonth) && r.type === chartType);
+  const total = recs.reduce((a,r)=>a+r.amount,0);
+  
+  donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['項目'],
+      datasets: [{
+        data: recs.length ? recs.map(r=>r.amount) : [1],
+        backgroundColor: ['#C38ED5', '#9B59B6', '#F3E5F5', '#D7A8E8'],
+        borderWidth: 0
+      }]
+    },
+    options: { cutout: '75%', plugins: { legend: { display: false } } }
+  });
+
+  const list = document.getElementById('chart-list');
+  list.innerHTML = `<div style="padding:10px; font-weight:bold;">${chartType==='expense'?'支出':'收入'}明細 (總計 ${fmt(total)})</div>`;
+  recs.forEach(r => {
+      list.innerHTML += `<div class="tx-item"><div class="tx-info">${r.date}</div><div>${fmt(r.amount)}</div></div>`;
+  });
+}
+
+// --- 日曆功能 ---
+function renderCal() {
+  const container = document.getElementById('cal-content');
+  const [y, m] = currentMonth.split('-').map(Number);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  
+  let html = `<div class="cal-wrap"><div style="display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:12px; color:#BBB;">
+    <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>`;
+  
+  const firstDay = new Date(y, m-1, 1).getDay();
+  for(let i=0; i<firstDay; i++) html += `<div></div>`;
+  for(let d=1; d<=daysInMonth; d++) {
+      const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      const hasRec = records.some(r => r.date === dateStr);
+      html += `<div style="padding:10px 0; position:relative;">${d}${hasRec?'<div style="width:4px; height:4px; background:var(--purple); border-radius:50%; margin:2px auto;"></div>':''}</div>`;
+  }
+  html += `</div></div>`;
+  container.innerHTML = html;
+}
+
+// 點擊遮罩關閉
+document.getElementById('add-modal').addEventListener('click', function(e) {
+    if(e.target === this) closeAddModal();
+});
 
 // 初始化
 renderHome();
