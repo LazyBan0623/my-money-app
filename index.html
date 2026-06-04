@@ -32,20 +32,26 @@ body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; 
   background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
   color: white; padding: calc(15px + var(--safe-top)) 20px 35px;
   border-radius: 0 0 40px 40px; box-shadow: 0 5px 20px rgba(155,89,182,0.2);
-  flex-shrink: 0; text-align: center;
+  flex-shrink: 0;
 }
 
+/* ── 大型存款顯示 ── */
+.balance-display { text-align: center; margin-bottom: 20px; }
+.balance-label { font-size: 12px; opacity: 0.8; margin-bottom: 5px; }
+.balance-val { font-size: 32px; font-weight: 700; letter-spacing: 1px; }
+
+/* ── 雙軌消費卡片 ── */
+.summary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+.summary-box { background: rgba(255,255,255,0.15); padding: 10px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.2); }
+.summary-box .label { font-size: 10px; opacity: 0.9; }
+.summary-box .val { font-size: 14px; font-weight: 700; }
+
 /* ── 預算卡片 ── */
-.budget-card {
-  background: white; border-radius: 25px; padding: 20px;
-  margin: -30px 20px 15px; box-shadow: 0 10px 30px rgba(195,142,213,0.15);
-}
+.card-v { background: white; border-radius: 25px; padding: 20px; margin-bottom: 15px; box-shadow: 0 8px 25px rgba(195,142,213,0.12); }
 .progress-container { height: 8px; background: #EEE; border-radius: 4px; margin: 12px 0; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--purple); border-radius: 4px; transition: width 0.5s ease; }
 
 /* ── 列表樣式 ── */
-.date-group { margin-bottom: 20px; }
-.date-label { font-size: 12px; color: #BBB; margin: 0 0 8px 10px; font-weight: 600; }
 .tx-item {
   background: white; border-radius: 20px; padding: 14px 18px;
   display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
@@ -53,9 +59,9 @@ body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; 
 }
 .tx-icon { width: 44px; height: 44px; border-radius: 14px; background: var(--purple-light); display: flex; align-items: center; justify-content: center; font-size: 22px; }
 .tx-info { flex: 1; }
-.tx-name { font-size: 15px; font-weight: 600; }
-.tx-note { font-size: 11px; color: #BBB; }
-.tx-amount { font-weight: 700; font-size: 16px; text-align: right; }
+.tx-name { font-size: 14px; font-weight: 600; }
+.tx-sub { font-size: 11px; color: #BBB; }
+.tx-amount { font-weight: 700; font-size: 15px; text-align: right; }
 .expense { color: #FF6B6B; }
 .income { color: #4ECB71; }
 
@@ -71,125 +77,171 @@ body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; 
 /* ── 懸浮按鈕 ── */
 .fab {
   position: fixed; bottom: calc(85px + var(--safe-bottom)); right: 20px;
-  width: 60px; height: 60px; background: var(--purple); color: white; font-size: 32px; border: none;
+  width: 58px; height: 58px; background: var(--purple); color: white; font-size: 30px; border: none;
   box-shadow: 0 10px 25px rgba(195,142,213,0.4); z-index: 90; border-radius: 30px;
 }
 
 /* ── 彈窗 ── */
 .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: flex-end; }
 .modal.open { display: flex; }
-.modal-sheet { background: white; width: 100%; border-radius: 35px 35px 0 0; padding-bottom: var(--safe-bottom); animation: slideUp 0.3s ease; }
+.modal-sheet { background: white; width: 100%; border-radius: 35px 35px 0 0; padding-bottom: var(--safe-bottom); animation: slideUp 0.3s ease; max-height: 90vh; overflow-y: auto; }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
+/* ── 表單元素 ── */
+.input-field { border: none; background: #F5F5F5; padding: 12px; border-radius: 12px; font-size: 14px; width: 100%; outline: none; margin-bottom: 10px; }
+.type-toggle { display: flex; background: #EEE; border-radius: 12px; padding: 4px; margin-bottom: 15px; }
+.type-btn { flex: 1; border: none; padding: 8px; border-radius: 10px; font-weight: bold; font-size: 13px; cursor: pointer; }
+.type-btn.active { background: white; color: var(--purple); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
 /* ── 分類網格 ── */
-.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px 20px; max-height: 200px; overflow-y: auto; }
-.cat-item { display: flex; flex-direction: column; align-items: center; gap: 5px; opacity: 0.4; transition: 0.2s; }
-.cat-item.active { opacity: 1; transform: scale(1.1); }
-.cat-btn { width: 45px; height: 45px; border-radius: 15px; background: #F8F8F8; display: flex; align-items: center; justify-content: center; font-size: 22px; }
-.cat-text { font-size: 11px; font-weight: 600; }
+.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px 20px; }
+.cat-item { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.4; }
+.cat-item.active { opacity: 1; transform: scale(1.05); }
+.cat-dot { width: 42px; height: 42px; border-radius: 14px; background: #F0F0F0; display: flex; align-items: center; justify-content: center; font-size: 20px; }
 
 /* ── 鍵盤 ── */
 .numpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; background: #F8F8F8; }
-.num-btn { background: white; border: none; height: 50px; border-radius: 12px; font-size: 18px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-.num-btn:active { background: #EEE; }
-.btn-save { background: var(--purple); color: white; grid-row: span 2; height: 108px; }
+.num-btn { background: white; border: none; height: 48px; border-radius: 12px; font-size: 18px; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.btn-save { background: var(--purple); color: white; grid-row: span 2; height: 104px; }
 
-/* ── 分析圖表 ── */
-.chart-box { background: white; border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.03); }
 </style>
 </head>
 <body>
 
 <div id="app">
-  <!-- ════════ 首頁 ════════ -->
+  <!-- ════════ 1. 首頁 ════════ -->
   <div class="screen active" id="screen-home">
     <div class="header-bg">
-      <div style="font-size:18px; font-weight:700; margin-bottom:15px;">💜 默認帳本</div>
-      <div style="display:flex; justify-content: space-around; align-items:center;">
-        <div><div style="font-size:11px; opacity:0.8;">本月收入</div><div id="sum-income" style="font-size:18px; font-weight:700;">$0</div></div>
-        <div><div style="font-size:11px; opacity:0.8;">本月支出</div><div id="sum-expense" style="font-size:18px; font-weight:700;">$0</div></div>
+      <div class="balance-display">
+        <div class="balance-label">目前存款總額 (餘額)</div>
+        <div class="balance-val" id="home-total-balance">$0</div>
+      </div>
+      <div class="summary-row">
+        <div class="summary-box">
+            <div class="label">現金消費累計</div>
+            <div class="val" id="home-cash-spent">$0</div>
+        </div>
+        <div class="summary-box">
+            <div class="label">信用卡消費累計</div>
+            <div class="val" id="home-card-spent">$0</div>
+        </div>
       </div>
     </div>
     
-    <div class="budget-card">
-      <div style="display:flex; justify-content: space-between; font-size:13px; font-weight:700;">
-        <span>📅 月預算進度</span>
-        <span id="budget-percent" style="color:var(--purple);">0%</span>
-      </div>
-      <div class="progress-container"><div id="budget-fill" class="progress-fill" style="width: 0%"></div></div>
-      <div id="budget-text" style="font-size:11px; color:#BBB;">剩餘預算加載中...</div>
-    </div>
+    <div class="scroll-area">
+        <div class="card-v">
+            <div style="display:flex; justify-content: space-between; font-size:13px; font-weight:700;">
+                <span>📅 本月預算進度</span>
+                <span id="home-budget-percent" style="color:var(--purple);">0%</span>
+            </div>
+            <div class="progress-container"><div id="home-budget-fill" class="progress-fill"></div></div>
+            <div id="home-budget-text" style="font-size:11px; color:#BBB;">載入中...</div>
+        </div>
 
-    <div class="scroll-area" id="home-list">
-        <!-- 近期紀錄 -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin: 10px 5px 15px;">
+            <span style="font-weight:700; font-size:15px;">📋 近期紀錄 (3筆)</span>
+            <span onclick="switchScreen('history')" style="font-size:12px; color:var(--purple);">查看全部 ›</span>
+        </div>
+        <div id="recent-list"></div>
     </div>
   </div>
 
-  <!-- ════════ 分析 ════════ -->
+  <!-- ════════ 2. 歷史紀錄 ════════ -->
+  <div class="screen" id="screen-history">
+    <div class="header-bg" style="height:140px;">
+        <div style="text-align:center; font-weight:700; margin-bottom:10px;">歷史紀錄</div>
+        <div style="text-align:center;">
+            <div style="font-size:11px; opacity:0.8;">本月總花費</div>
+            <div style="font-size:24px; font-weight:700;" id="history-month-spent">$0</div>
+        </div>
+    </div>
+    <div class="scroll-area" id="full-history-list">
+        <!-- 完整列表 -->
+    </div>
+  </div>
+
+  <!-- ════════ 3. 圖表分析 ════════ -->
   <div class="screen" id="screen-chart">
-    <div class="header-bg" style="height:120px;">
-        <div style="font-size:18px; font-weight:700; padding-top:10px;">圖表分析</div>
+    <div class="header-bg" style="height:100px; padding-top:20px; text-align:center;">
+        <span style="font-weight:700;">數據分析</span>
     </div>
     <div class="scroll-area">
-        <div class="chart-box">
-            <div style="font-size:14px; font-weight:700; margin-bottom:15px;">🛒 支出佔比</div>
+        <div class="card-v">
             <canvas id="donut-canvas"></canvas>
         </div>
-        <div id="ranking-list" style="margin-bottom:20px;"></div>
-        <div class="chart-box">
-            <div style="font-size:14px; font-weight:700; margin-bottom:15px;">📈 資產趨勢</div>
-            <canvas id="trend-canvas"></canvas>
+        <div id="ranking-list"></div>
+    </div>
+  </div>
+
+  <!-- ════════ 4. 更多/設定 ════════ -->
+  <div class="screen" id="screen-settings">
+    <div class="header-bg" style="height:100px; padding-top:20px; text-align:center;">
+        <span style="font-weight:700;">設定與更多</span>
+    </div>
+    <div class="scroll-area">
+        <div class="card-v">
+            <div style="font-weight:700; margin-bottom:15px; border-bottom:1px solid #EEE; padding-bottom:10px;">預算與存款設定</div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:#999; display:block; margin-bottom:5px;">每月預算金額</label>
+                <input type="number" id="set-budget" class="input-field" placeholder="例如: 20000">
+            </div>
+            <div style="margin-bottom:15px;">
+                <label style="font-size:12px; color:#999; display:block; margin-bottom:5px;">初始存款調整 (不透過紀錄)</label>
+                <input type="number" id="set-balance" class="input-field" placeholder="例如: 50000">
+            </div>
+            <button onclick="saveSettings()" style="width:100%; padding:12px; border:none; background:var(--purple); color:white; border-radius:12px; font-weight:bold;">儲存設定</button>
+        </div>
+        
+        <div style="text-align:center; color:#CCC; font-size:11px; margin-top:20px;">
+            淡紫記帳 Pro v2.0<br>資料儲存於手機本地 Safari
         </div>
     </div>
   </div>
 
-  <!-- ════════ 日曆 ════════ -->
-  <div class="screen" id="screen-cal">
-    <div class="header-bg" style="height:120px;">
-        <div style="font-size:18px; font-weight:700; padding-top:10px;">日曆追蹤</div>
-    </div>
-    <div class="scroll-area" id="cal-view">
-        <!-- 日曆由 JS 注入 -->
-    </div>
-  </div>
-
-  <!-- ════════ 導航 ════════ -->
+  <!-- ════════ 底部導航 ════════ -->
   <nav class="bottom-nav">
-    <div class="nav-item active" id="nav-home" onclick="switchScreen('home')"><span>📒</span>記帳本</div>
-    <div class="nav-item" id="nav-chart" onclick="switchScreen('chart')"><span>🥧</span>分析</div>
-    <div class="nav-item" id="nav-cal" onclick="switchScreen('cal')"><span>📅</span>日曆</div>
+    <div class="nav-item active" id="nav-home" onclick="switchScreen('home')"><span>🏠</span>首頁</div>
+    <div class="nav-item" id="nav-history" onclick="switchScreen('history')"><span>📜</span>歷史</div>
+    <div class="nav-item" id="nav-chart" onclick="switchScreen('chart')"><span>📊</span>分析</div>
+    <div class="nav-item" id="nav-settings" onclick="switchScreen('settings')"><span>⚙️</span>更多</div>
   </nav>
 
-  <button class="fab" onclick="openModal()">+</button>
+  <button class="fab" onclick="openAddModal()">+</button>
 </div>
 
-<!-- ════════ 記帳彈窗 ════════ -->
-<div class="modal" id="add-modal" onclick="if(event.target==this) closeModal()">
+<!-- ════════ 記帳/編輯 彈窗 ════════ -->
+<div class="modal" id="add-modal">
   <div class="modal-sheet">
-    <div style="padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
-        <button onclick="closeModal()" style="border:none; background:none; color:#CCC; font-size:20px;">✕</button>
-        <div style="display:flex; background:#F0F0F0; border-radius:10px; padding:3px;">
-            <button id="acc-cash" onclick="setAccount('現金')" style="padding:5px 15px; border:none; border-radius:8px; font-size:12px; font-weight:bold;">現金</button>
-            <button id="acc-card" onclick="setAccount('信用卡')" style="padding:5px 15px; border:none; border-radius:8px; font-size:12px; font-weight:bold; background:none; color:#AAA;">信用卡</button>
+    <div style="padding:15px 20px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #F0F0F0;">
+        <button onclick="closeAddModal()" style="border:none; background:none; color:#CCC; font-size:18px;">✕</button>
+        <span id="modal-title" style="font-weight:bold; color:var(--purple);">新增紀錄</span>
+        <button id="delete-btn" style="display:none; color:#FF6B6B; border:none; background:none; font-size:13px; font-weight:bold;">刪除</button>
+    </div>
+
+    <div style="padding:15px 20px 0;">
+        <div class="type-toggle">
+            <button class="type-btn active" id="btn-exp" onclick="setAddType('expense')">支出</button>
+            <button class="type-btn" id="btn-inc" onclick="setAddType('income')">收入</button>
         </div>
-        <span style="width:20px;"></span>
+        
+        <div id="account-row" style="display:flex; gap:10px; margin-bottom:10px;">
+            <button id="acc-cash" onclick="setAccount('現金')" style="flex:1; padding:8px; border-radius:10px; border:1px solid #DDD; background:white; font-size:12px;">現金</button>
+            <button id="acc-card" onclick="setAccount('信用卡')" style="flex:1; padding:8px; border-radius:10px; border:1px solid #DDD; background:white; font-size:12px;">信用卡</button>
+        </div>
+
+        <input id="note-input" type="text" placeholder="備註/標題..." class="input-field">
+        <input id="date-input" type="date" class="input-field">
+        
+        <div id="display-amount" style="text-align:center; font-size:42px; color:var(--purple); font-weight:300; padding:10px;">0</div>
     </div>
 
-    <!-- 標題與日期 -->
-    <div style="padding:0 20px 10px; display:flex; gap:10px;">
-        <input id="note-input" type="text" placeholder="📝 輸入備註..." style="flex:1; border:none; background:#F8F8F8; padding:10px; border-radius:12px; font-size:14px; outline:none;">
-        <input id="date-input" type="date" style="border:none; background:#F8F8F8; padding:10px; border-radius:12px; font-size:12px; outline:none;">
-    </div>
-
-    <div id="display-amount" style="text-align:center; font-size:48px; padding:10px; color:var(--purple); font-weight:300;">0</div>
-    
     <div class="cat-grid" id="cat-grid"></div>
 
     <div class="numpad">
         <button class="num-btn" onclick="pressKey('7')">7</button>
         <button class="num-btn" onclick="pressKey('8')">8</button>
         <button class="num-btn" onclick="pressKey('9')">9</button>
-        <button class="num-btn" onclick="pressKey('delete')" style="color:var(--purple);">⌫</button>
+        <button class="num-btn" onclick="pressKey('del')" style="color:var(--purple);">⌫</button>
         <button class="num-btn" onclick="pressKey('4')">4</button>
         <button class="num-btn" onclick="pressKey('5')">5</button>
         <button class="num-btn" onclick="pressKey('6')">6</button>
@@ -205,8 +257,7 @@ body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; 
 </div>
 
 <script>
-// --- 設定與資料 ---
-const MONTHLY_BUDGET = 20000;
+// --- 資料結構 ---
 const CATEGORIES = [
     {id:'food', name:'飲食', icon:'🍔'}, {id:'bus', name:'交通', icon:'🚌'},
     {id:'shop', name:'購物', icon:'🛍️'}, {id:'home', name:'日用', icon:'🏠'},
@@ -216,16 +267,26 @@ const CATEGORIES = [
     {id:'tax', name:'稅金', icon:'💵'}, {id:'other', name:'其他', icon:'💰'}
 ];
 
-let records = JSON.parse(localStorage.getItem('lzb_pro_v1') || '[]');
-let amountStr = "";
-let selectedCat = 'food';
-let selectedAccount = '現金';
-let donutChart = null, trendChart = null;
+let state = {
+    records: JSON.parse(localStorage.getItem('lzb_recs') || '[]'),
+    budget: parseFloat(localStorage.getItem('lzb_budget') || '20000'),
+    initBalance: parseFloat(localStorage.getItem('lzb_init_bal') || '0'),
+    editingId: null,
+    currentType: 'expense',
+    currentAccount: '現金',
+    currentCat: 'food',
+    amountStr: ''
+};
 
-function saveData() { localStorage.setItem('lzb_pro_v1', JSON.stringify(records)); }
+function saveToLocal() {
+    localStorage.setItem('lzb_recs', JSON.stringify(state.records));
+    localStorage.setItem('lzb_budget', state.budget.toString());
+    localStorage.setItem('lzb_init_bal', state.initBalance.toString());
+}
+
 function fmt(n) { return '$' + Math.abs(n).toLocaleString('en'); }
 
-// --- 介面控制 ---
+// --- 介面渲染 ---
 function switchScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById('screen-' + id).classList.add('active');
@@ -233,189 +294,236 @@ function switchScreen(id) {
     document.getElementById('nav-' + id).classList.add('active');
     
     if(id === 'home') renderHome();
-    if(id === 'chart') renderAnalysis();
-    if(id === 'cal') renderCalendar();
+    if(id === 'history') renderHistory();
+    if(id === 'chart') renderChart();
+    if(id === 'settings') {
+        document.getElementById('set-budget').value = state.budget;
+        document.getElementById('set-balance').value = state.initBalance;
+    }
 }
 
-function openModal() {
+function renderHome() {
+    // 1. 計算存款總額: 初始金額 + 收入 - 支出
+    const incomeTotal = state.records.filter(r => r.type === 'income').reduce((a,b) => a + b.amount, 0);
+    const expenseTotal = state.records.filter(r => r.type === 'expense').reduce((a,b) => a + b.amount, 0);
+    const currentBalance = state.initBalance + incomeTotal - expenseTotal;
+    document.getElementById('home-total-balance').innerText = fmt(currentBalance);
+
+    // 2. 本月消費累計 (現金 vs 信用卡)
+    const now = new Date().toISOString().slice(0, 7);
+    const thisMonthRecs = state.records.filter(r => r.date.startsWith(now) && r.type === 'expense');
+    const cashSpent = thisMonthRecs.filter(r => r.account === '現金').reduce((a,b) => a + b.amount, 0);
+    const cardSpent = thisMonthRecs.filter(r => r.account === '信用卡').reduce((a,b) => a + b.amount, 0);
+    document.getElementById('home-cash-spent').innerText = fmt(cashSpent);
+    document.getElementById('home-card-spent').innerText = fmt(cardSpent);
+
+    // 3. 預算進度
+    const totalMonthSpent = cashSpent + cardSpent;
+    const pct = Math.min(Math.round((totalMonthSpent / state.budget) * 100), 100);
+    document.getElementById('home-budget-fill').style.width = pct + '%';
+    document.getElementById('home-budget-percent').innerText = pct + '%';
+    document.getElementById('home-budget-text').innerText = `預算 ${fmt(state.budget)}，剩餘 ${fmt(state.budget - totalMonthSpent)}`;
+
+    // 4. 近期 3 筆
+    const recent = state.records.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id).slice(0, 3);
+    const list = document.getElementById('recent-list');
+    list.innerHTML = recent.length ? '' : '<div style="text-align:center; color:#CCC; padding:20px;">尚無紀錄</div>';
+    recent.forEach(r => list.innerHTML += renderTxItem(r));
+}
+
+function renderHistory() {
+    const now = new Date().toISOString().slice(0, 7);
+    const thisMonthSpent = state.records.filter(r => r.date.startsWith(now) && r.type === 'expense').reduce((a,b) => a + b.amount, 0);
+    document.getElementById('history-month-spent').innerText = fmt(thisMonthSpent);
+
+    const sorted = state.records.sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
+    const list = document.getElementById('full-history-list');
+    list.innerHTML = '';
+    
+    let lastDate = "";
+    sorted.forEach(r => {
+        if(r.date !== lastDate) {
+            list.innerHTML += `<div style="font-size:12px; color:#BBB; margin:15px 5px 5px; font-weight:bold;">${r.date}</div>`;
+            lastDate = r.date;
+        }
+        list.innerHTML += renderTxItem(r, true);
+    });
+}
+
+function renderTxItem(r, isHistory = false) {
+    const cat = CATEGORIES.find(c => c.id === r.cat) || CATEGORIES[0];
+    const clickAction = isHistory ? `onclick="openEdit(${r.id})"` : '';
+    return `
+        <div class="tx-item" ${clickAction}>
+            <div class="tx-icon">${cat.icon}</div>
+            <div class="tx-info">
+                <div class="tx-name">${r.note}</div>
+                <div class="tx-sub">${r.account} | ${r.type==='income'?'收入':'支出'}</div>
+            </div>
+            <div class="tx-amount ${r.type}">${r.type==='expense'?'-':'+'}${fmt(r.amount)}</div>
+        </div>
+    `;
+}
+
+// --- 彈窗邏輯 ---
+function openAddModal() {
+    state.editingId = null;
+    state.amountStr = "";
+    state.currentCat = 'food';
+    state.currentType = 'expense';
+    state.currentAccount = '現金';
+    document.getElementById('modal-title').innerText = "新增紀錄";
+    document.getElementById('delete-btn').style.display = "none";
+    document.getElementById('note-input').value = "";
+    document.getElementById('date-input').value = new Date().toISOString().slice(0, 10);
+    syncModalUI();
     document.getElementById('add-modal').classList.add('open');
-    document.getElementById('date-input').value = new Date().toISOString().slice(0,10);
+}
+
+function openEdit(id) {
+    const r = state.records.find(x => x.id === id);
+    if(!r) return;
+    state.editingId = id;
+    state.amountStr = r.amount.toString();
+    state.currentCat = r.cat;
+    state.currentType = r.type;
+    state.currentAccount = r.account;
+    document.getElementById('modal-title').innerText = "編輯紀錄";
+    document.getElementById('delete-btn').style.display = "block";
+    document.getElementById('delete-btn').onclick = () => { if(confirm('確定刪除？')) { deleteRec(id); } };
+    document.getElementById('note-input').value = r.note;
+    document.getElementById('date-input').value = r.date;
+    syncModalUI();
+    document.getElementById('add-modal').classList.add('open');
+}
+
+function syncModalUI() {
+    updateDisplay();
+    setAddType(state.currentType);
+    setAccount(state.currentAccount);
     renderCatGrid();
 }
-function closeModal() { document.getElementById('add-modal').classList.remove('open'); amountStr = ""; updateDisplay(); }
+
+function closeModal() { document.getElementById('add-modal').classList.remove('open'); }
 
 function renderCatGrid() {
     const grid = document.getElementById('cat-grid');
     grid.innerHTML = CATEGORIES.map(c => `
-        <div class="cat-item ${selectedCat===c.id?'active':''}" onclick="selectedCat='${c.id}'; renderCatGrid();">
-            <div class="cat-btn">${c.icon}</div>
-            <div class="cat-text">${c.name}</div>
+        <div class="cat-item ${state.currentCat===c.id?'active':''}" onclick="state.currentCat='${c.id}'; renderCatGrid();">
+            <div class="cat-dot">${c.icon}</div>
+            <div style="font-size:10px; font-weight:bold;">${c.name}</div>
         </div>
     `).join('');
 }
 
+function setAddType(t) {
+    state.currentType = t;
+    document.getElementById('btn-exp').className = 'type-btn' + (t==='expense'?' active':'');
+    document.getElementById('btn-inc').className = 'type-btn' + (t==='income'?' active':'');
+}
+
 function setAccount(acc) {
-    selectedAccount = acc;
-    document.getElementById('acc-cash').style.background = acc==='現金'?'white':'none';
-    document.getElementById('acc-cash').style.color = acc==='現金'?'black':'#AAA';
-    document.getElementById('acc-card').style.background = acc==='信用卡'?'white':'none';
-    document.getElementById('acc-card').style.color = acc==='信用卡'?'black':'#AAA';
+    state.currentAccount = acc;
+    document.getElementById('acc-cash').style.borderColor = acc==='現金'?'var(--purple)':'#DDD';
+    document.getElementById('acc-card').style.borderColor = acc==='信用卡'?'var(--purple)':'#DDD';
 }
 
 function pressKey(v) {
-    if(v === 'delete') amountStr = amountStr.slice(0,-1);
-    else amountStr += v;
+    if(v === 'del') state.amountStr = state.amountStr.slice(0, -1);
+    else state.amountStr += v;
     updateDisplay();
 }
-function updateDisplay() { document.getElementById('display-amount').innerText = amountStr || "0"; }
+function updateDisplay() { document.getElementById('display-amount').innerText = state.amountStr || "0"; }
 
-// --- 核心運作 ---
+// --- 核心邏輯 ---
 function saveRecord() {
-    if(!amountStr) return;
+    if(!state.amountStr) return;
     try {
-        let amt = eval(amountStr);
-        records.push({
-            id: Date.now(),
-            amount: parseFloat(amt),
-            cat: selectedCat,
-            account: selectedAccount,
-            note: document.getElementById('note-input').value || CATEGORIES.find(c=>c.id===selectedCat).name,
-            date: document.getElementById('date-input').value,
-            type: 'expense'
-        });
-        saveData();
+        const amt = parseFloat(eval(state.amountStr));
+        const data = {
+            id: state.editingId || Date.now(),
+            amount: amt,
+            type: state.currentType,
+            account: state.currentAccount,
+            cat: state.currentCat,
+            note: document.getElementById('note-input').value || CATEGORIES.find(c=>c.id===state.currentCat).name,
+            date: document.getElementById('date-input').value
+        };
+
+        if(state.editingId) {
+            const idx = state.records.findIndex(r => r.id === state.editingId);
+            state.records[idx] = data;
+        } else {
+            state.records.push(data);
+        }
+        
+        saveToLocal();
         closeModal();
         renderHome();
-    } catch(e) { alert('運算錯誤'); amountStr = ""; updateDisplay(); }
+        renderHistory();
+    } catch(e) { alert('計算錯誤'); state.amountStr = ""; updateDisplay(); }
 }
 
-function renderHome() {
-    const recs = records.sort((a,b) => b.date.localeCompare(a.date));
-    const expense = recs.reduce((a,b) => a + b.amount, 0);
-    
-    // 更新預算
-    const percent = Math.min(Math.round((expense/MONTHLY_BUDGET)*100), 100);
-    document.getElementById('budget-fill').style.width = percent + '%';
-    document.getElementById('budget-percent').innerText = percent + '%';
-    document.getElementById('budget-text').innerText = `本月預算 $${MONTHLY_BUDGET}，剩餘 $${MONTHLY_BUDGET - expense}`;
-    document.getElementById('sum-expense').innerText = fmt(expense);
-
-    const list = document.getElementById('home-list');
-    list.innerHTML = `<div style="font-weight:bold; margin-bottom:15px;">📋 近期記錄</div>`;
-    
-    // 日期分組
-    const groups = {};
-    recs.slice(0, 20).forEach(r => { groups[r.date] = groups[r.date] || []; groups[r.date].push(r); });
-    
-    Object.keys(groups).forEach(date => {
-        let html = `<div class="date-group"><div class="date-label">${date}</div>`;
-        groups[date].forEach(r => {
-            const cat = CATEGORIES.find(c => c.id === r.cat);
-            html += `
-                <div class="tx-item">
-                    <div class="tx-icon">${cat.icon}</div>
-                    <div class="tx-info">
-                        <div class="tx-name">${r.note}</div>
-                        <div style="font-size:11px; color:#BBB;">${r.account}</div>
-                    </div>
-                    <div class="tx-amount expense">-${fmt(r.amount)}</div>
-                </div>`;
-        });
-        list.innerHTML += html + `</div>`;
-    });
+function deleteRec(id) {
+    state.records = state.records.filter(r => r.id !== id);
+    saveToLocal();
+    closeModal();
+    renderHome();
+    renderHistory();
 }
 
-function renderAnalysis() {
-    const recs = records;
-    const catData = {};
-    CATEGORIES.forEach(c => catData[c.id] = 0);
-    recs.forEach(r => catData[r.cat] += r.amount);
+function saveSettings() {
+    state.budget = parseFloat(document.getElementById('set-budget').value) || 0;
+    state.initBalance = parseFloat(document.getElementById('set-balance').value) || 0;
+    saveToLocal();
+    alert('設定已儲存');
+    renderHome();
+}
 
-    // 圓環圖
-    const ctxD = document.getElementById('donut-canvas');
+// --- 圖表 ---
+function renderChart() {
+    const ctx = document.getElementById('donut-canvas');
     if(donutChart) donutChart.destroy();
-    donutChart = new Chart(ctxD, {
+    
+    const now = new Date().toISOString().slice(0, 7);
+    const thisMonthRecs = state.records.filter(r => r.date.startsWith(now) && r.type === 'expense');
+    
+    const dataMap = {};
+    thisMonthRecs.forEach(r => dataMap[r.cat] = (dataMap[r.cat] || 0) + r.amount);
+    
+    const labels = Object.keys(dataMap).map(id => CATEGORIES.find(c=>c.id===id).name);
+    const values = Object.values(dataMap);
+
+    donutChart = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: CATEGORIES.map(c => c.name),
+            labels: labels,
             datasets: [{
-                data: CATEGORIES.map(c => catData[c.id]),
-                backgroundColor: ['#C38ED5', '#9B59B6', '#D7A8E8', '#F3E5F5', '#E0D0EC', '#A5D6A7', '#81C784', '#FFF176', '#FFD54F', '#FF8A65', '#BA68C8', '#90A4AE'],
+                data: values.length ? values : [1],
+                backgroundColor: ['#C38ED5', '#9B59B6', '#D7A8E8', '#F3E5F5', '#E0D0EC', '#A5D6A7', '#81C784', '#FFF176'],
                 borderWidth: 0
             }]
         },
         options: { cutout: '70%', plugins: { legend: { display: false } } }
     });
 
-    // 排行榜
-    const total = Object.values(catData).reduce((a,b)=>a+b, 0);
-    const sorted = CATEGORIES.map(c => ({...c, val: catData[c.id]}))
-                   .filter(c => c.val > 0)
-                   .sort((a,b) => b.val - a.val);
-    
-    document.getElementById('ranking-list').innerHTML = sorted.map(c => `
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-            <span style="font-size:18px;">${c.icon}</span>
-            <div style="flex:1;">
-                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
-                    <span>${c.name} (${Math.round(c.val/total*100)}%)</span>
-                    <span>${fmt(c.val)}</span>
-                </div>
-                <div style="height:4px; background:#EEE; border-radius:2px;">
-                    <div style="height:100%; width:${c.val/total*100}%; background:var(--purple); border-radius:2px;"></div>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    // 資產趨勢 (簡單淨值變化)
-    const trendCtx = document.getElementById('trend-canvas');
-    if(trendChart) trendChart.destroy();
-    
-    const dateMap = {};
-    recs.forEach(r => { dateMap[r.date] = (dateMap[r.date] || 0) + r.amount; });
-    const sortedDates = Object.keys(dateMap).sort();
-    let cumulative = 0;
-    const trendData = sortedDates.map(d => { cumulative += dateMap[d]; return cumulative; });
-
-    trendChart = new Chart(trendCtx, {
-        type: 'line',
-        data: {
-            labels: sortedDates.map(d => d.slice(5)),
-            datasets: [{ label: '累計支出', data: trendData, borderColor: '#C38ED5', tension: 0.4, fill: false }]
-        },
-        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    const rankList = document.getElementById('ranking-list');
+    rankList.innerHTML = '<div style="font-weight:bold; margin:20px 0 10px;">📊 支出排行</div>';
+    const sorted = Object.entries(dataMap).sort((a,b) => b[1] - a[1]);
+    sorted.forEach(([id, val]) => {
+        const cat = CATEGORIES.find(c => c.id === id);
+        rankList.innerHTML += `
+            <div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #F0F0F0; font-size:14px;">
+                <span>${cat.icon} ${cat.name}</span>
+                <span style="font-weight:bold;">${fmt(val)}</span>
+            </div>`;
     });
 }
 
-function renderCalendar() {
-    const container = document.getElementById('cal-view');
-    const today = new Date().toISOString().slice(0,7);
-    const [y, m] = today.split('-').map(Number);
-    const daysInMonth = new Date(y, m, 0).getDate();
-    const firstDay = new Date(y, m-1, 1).getDay();
-    
-    let html = `<div style="font-weight:bold; margin-bottom:15px;">${y}年 ${m}月</div>`;
-    html += `<div style="display:grid; grid-template-columns:repeat(7,1fr); text-align:center; font-size:12px; font-weight:bold; color:#BBB; margin-bottom:10px;">
-        <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>`;
-    
-    for(let i=0; i<firstDay; i++) html += `<div></div>`;
-    for(let d=1; d<=daysInMonth; d++) {
-        const dateStr = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const dayRecs = records.filter(r => r.date === dateStr);
-        const daySum = dayRecs.reduce((a,b) => a + b.amount, 0);
-        
-        html += `
-            <div style="padding:10px 0; border-radius:12px; position:relative;">
-                <div style="font-size:14px; font-weight:500;">${d}</div>
-                ${daySum > 0 ? `<div style="font-size:8px; color:#FF6B6B;">-${Math.round(daySum)}</div>` : ''}
-            </div>`;
-    }
-    container.innerHTML = html + `</div>`;
-}
-
 // 初始化
-renderHome();
+document.addEventListener('DOMContentLoaded', () => {
+    renderHome();
+});
 </script>
 </body>
 </html>
