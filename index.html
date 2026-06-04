@@ -7,272 +7,294 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="淡紫記帳">
 <meta name="theme-color" content="#C38ED5">
-<link rel="manifest" href="manifest.json">
-<title>淡紫記帳 - Money+ Style</title>
+<title>淡紫記帳</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --purple: #C38ED5;
-  --purple-dark: #A573B8;
+  --purple-dark: #9B59B6;
   --purple-light: #F3E5F5;
   --purple-pale: #FAF5FF;
-  --bg-color: #FDF9FF;
-  --card-shadow: 0 10px 30px rgba(195,142,213,0.15);
+  --text: #4A4A4A;
+  --shadow: 0 8px 25px rgba(195,142,213,0.15);
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { 
-    background: var(--bg-color); 
-    font-family: 'Noto Sans TC', -apple-system, sans-serif; 
-    color: #4A4A4A;
-    overflow: hidden;
-}
+body { height: 100%; overflow: hidden; font-family: 'Noto Sans TC', sans-serif; background: #FDF9FF; color: var(--text); }
+#app { height: 100dvh; display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; position: relative; overflow: hidden; }
 
-#app { height: 100dvh; display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; position: relative; }
-
-/* --- 螢幕控制 --- */
-.screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; padding-bottom: 100px; }
+/* ── 畫面切換 ── */
+.screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; padding-bottom: 90px; }
 .screen.active { display: flex; }
 
-/* --- 頂部裝飾 --- */
+/* ── 頂部紫色漸層背景 ── */
 .header-bg {
-    background: var(--purple);
-    height: 220px;
-    border-radius: 0 0 40px 40px;
-    position: absolute;
-    top: 0; width: 100%; z-index: -1;
+  background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
+  color: white; padding: 50px 20px 30px;
+  border-radius: 0 0 35px 35px;
+  box-shadow: 0 5px 20px rgba(155,89,182,0.2);
 }
+.header-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 20px; }
 
-/* --- 首頁統計卡片 --- */
-.summary-container {
-    margin: 60px 20px 20px;
-    background: white;
-    border-radius: 30px;
-    padding: 25px;
-    box-shadow: var(--card-shadow);
-    text-align: center;
+/* ── 統計卡片 ── */
+.summary-card {
+  background: white; border-radius: 25px; padding: 20px;
+  margin: -20px 20px 15px; box-shadow: var(--shadow);
+  display: flex; justify-content: space-around; text-align: center;
 }
-.summary-main-val { font-size: 32px; font-weight: 700; color: var(--purple); margin: 10px 0; }
-.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; border-top: 1px solid #F0F0F0; pt: 15px; }
+.summary-item .label { font-size: 11px; color: #BBB; margin-bottom: 5px; }
+.summary-item .val { font-size: 16px; font-weight: 700; color: var(--purple); }
+.summary-item .val.red { color: #FF6B6B; }
+.summary-item .val.green { color: #4ECB71; }
 
-/* --- 預算與目標區 (複刻 Money+) --- */
-.horizontal-scroll {
-    display: flex; gap: 15px; overflow-x: auto; padding: 0 20px 20px;
-}
-.horizontal-scroll::-webkit-scrollbar { display: none; }
-.mini-card {
-    min-width: 160px; background: white; border-radius: 20px; padding: 15px; box-shadow: var(--card-shadow);
-}
-.progress-bar { height: 6px; background: #EEE; border-radius: 3px; margin: 8px 0; overflow: hidden; }
-.progress-inner { height: 100%; background: var(--purple); border-radius: 3px; }
-
-/* --- 交易清單 --- */
-.list-container { padding: 0 20px; }
-.date-header { font-size: 13px; color: #999; margin: 15px 5px 8px; font-weight: 500; }
+/* ── 列表樣式 ── */
+.date-group { margin: 15px 20px; }
+.date-header { font-size: 12px; color: #AAA; margin-bottom: 8px; padding-left: 5px; }
 .tx-item {
-    background: white; border-radius: 18px; padding: 15px; display: flex; align-items: center; 
-    margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  background: white; border-radius: 18px; padding: 12px 15px;
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
 }
-.tx-icon { width: 45px; height: 45px; background: var(--purple-pale); border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-right: 12px; }
+.tx-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--purple-pale); display: flex; align-items: center; justify-content: center; font-size: 20px; }
 .tx-info { flex: 1; }
-.tx-title { font-size: 15px; font-weight: 600; }
-.tx-note { font-size: 11px; color: #BBB; }
-.tx-amount { font-weight: 700; font-size: 16px; }
-.amount-expense { color: #FF6B6B; }
-.amount-income { color: #4ECB71; }
+.tx-name { font-size: 15px; font-weight: 600; }
+.tx-amount { font-size: 16px; font-weight: 700; text-align: right; }
 
-/* --- 底部導航 --- */
+/* ── 底部導航 ── */
 .bottom-nav {
-    position: fixed; bottom: 0; width: 100%; max-width: 430px;
-    background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
-    display: flex; justify-content: space-around; padding: 15px 0 calc(15px + env(safe-area-inset-bottom));
-    border-top: 1px solid #EEE; z-index: 100;
+  position: fixed; bottom: 0; width: 100%; max-width: 430px;
+  background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+  display: flex; padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid #EEE; z-index: 100;
 }
-.nav-item { display: flex; flex-direction: column; align-items: center; color: #CCC; transition: 0.3s; }
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #CCC; font-size: 10px; font-weight: bold; }
 .nav-item.active { color: var(--purple); }
-.nav-item span { font-size: 10px; margin-top: 5px; font-weight: bold; }
+.nav-icon { font-size: 22px; }
 
-/* --- 浮動按鈕 --- */
+/* ── 懸浮按鈕 ── */
 .fab {
-    position: fixed; bottom: 100px; right: 25px;
-    width: 60px; height: 60px; background: var(--purple);
-    border-radius: 30px; display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 28px; box-shadow: 0 8px 20px rgba(195,142,213,0.4);
-    z-index: 90; cursor: pointer;
+  position: fixed; bottom: calc(85px + env(safe-area-inset-bottom)); right: 20px;
+  width: 58px; height: 58px; border-radius: 50%;
+  background: var(--purple); color: white; font-size: 30px; border: none;
+  box-shadow: 0 5px 15px rgba(195,142,213,0.4); z-index: 90;
 }
 
-/* --- 彈出層與鍵盤 (保持原本強大邏輯) --- */
-.modal-overlay { 
-    position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; 
-    display: none; align-items: flex-end; 
-}
+/* ── 彈窗與鍵盤 ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 200; align-items: flex-end; }
 .modal-overlay.open { display: flex; }
-.modal-sheet { 
-    background: white; width: 100%; border-radius: 30px 30px 0 0; 
-    padding-bottom: env(safe-area-inset-bottom);
-    animation: slideIn 0.3s ease-out;
-}
-@keyframes slideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-sheet { background: white; width: 100%; border-radius: 30px 30px 0 0; animation: slideUp 0.3s ease; padding-bottom: env(safe-area-inset-bottom); }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-/* --- 數字鍵盤優化 --- */
-.numpad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 20px; background: #F9F9F9; }
-.num-btn { 
-    background: white; border: none; height: 55px; border-radius: 15px; 
-    font-size: 20px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-}
+.numpad-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 15px; background: #F8F8F8; }
+.num-btn { background: white; border: none; height: 50px; border-radius: 12px; font-size: 18px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 .num-btn:active { background: #EEE; }
-.btn-purple { background: var(--purple); color: white; }
+.btn-op { background: var(--purple-light); color: var(--purple); }
+.btn-save { background: var(--purple); color: white; grid-row: span 2; height: 108px; }
 
+/* ── 修正圖表容器 ── */
+.chart-container { padding: 20px; background: white; border-radius: 25px; margin: 20px; box-shadow: var(--shadow); }
 </style>
 </head>
 <body>
 
 <div id="app">
-  <div class="header-bg"></div>
-
-  <!-- 主頁面 -->
+  <!-- ════════ 首頁 ════════ -->
   <div class="screen active" id="screen-home">
-    <div class="summary-container">
-        <div style="font-size: 13px; color: #999;">2025年6月 總餘額</div>
-        <div class="summary-main-val" id="sum-total">$9,040.94</div>
-        <div class="summary-grid">
-            <div><div style="font-size:11px; color:#BBB">本月收入</div><div style="color:#4ECB71; font-weight:700" id="sum-income">$10,000</div></div>
-            <div><div style="font-size:11px; color:#BBB">本月支出</div><div style="color:#FF6B6B; font-weight:700" id="sum-expense">$959.06</div></div>
-        </div>
+    <div class="header-bg">
+      <div class="header-title">💜 默認帳本</div>
+      <div style="display:flex; justify-content: space-between; align-items:center; padding: 0 10px;">
+        <button onclick="changeMonth(-1)" style="background:none; border:none; color:white; font-size:20px;">‹</button>
+        <span id="month-label" style="font-weight:700;">2025年6月</span>
+        <button onclick="changeMonth(1)" style="background:none; border:none; color:white; font-size:20px;">›</button>
+      </div>
     </div>
-
-    <!-- 預算與目標 -->
-    <div class="horizontal-scroll">
-        <div class="mini-card">
-            <div style="font-size: 12px; font-weight: bold;">📅 每日預算</div>
-            <div class="progress-bar"><div class="progress-inner" style="width: 45%;"></div></div>
-            <div style="font-size: 10px; color: #999;">剩餘 $200 / $500</div>
-        </div>
-        <div class="mini-card">
-            <div style="font-size: 12px; font-weight: bold;">🚗 買車目標</div>
-            <div class="progress-bar"><div class="progress-inner" style="width: 15%;"></div></div>
-            <div style="font-size: 10px; color: #999;">已存 $15,000</div>
-        </div>
+    <div class="summary-card">
+      <div class="summary-item"><div class="label">總額</div><div class="val" id="sum-total">$0</div></div>
+      <div class="summary-item"><div class="label">收入</div><div class="val green" id="sum-income">$0</div></div>
+      <div class="summary-item"><div class="label">支出</div><div class="val red" id="sum-expense">$0</div></div>
     </div>
-
-    <div class="list-container" id="tx-list">
-        <!-- 交易記錄會動態注入這裡 -->
+    <div id="tx-list">
+      <!-- 列表注入位置 -->
     </div>
   </div>
 
-  <!-- 圖表頁面 (結構保持你的邏輯) -->
+  <!-- ════════ 圖表 ════════ -->
   <div class="screen" id="screen-chart">
-    <div style="padding: 60px 20px;">
-        <canvas id="chartCanvas"></canvas>
+    <div class="header-bg" style="height:150px; padding-top:40px;">
+      <div class="header-title">圖表分析</div>
+    </div>
+    <div class="chart-container">
+      <canvas id="donut-canvas"></canvas>
+    </div>
+    <div id="chart-list" style="padding: 0 20px;"></div>
+  </div>
+
+  <!-- ════════ 日曆 ════════ -->
+  <div class="screen" id="screen-cal">
+    <div class="header-bg" style="height:150px; padding-top:40px;">
+        <div class="header-title">日曆檢視</div>
+    </div>
+    <div id="cal-container" style="background:white; margin: -30px 20px 20px; border-radius:25px; padding:15px; box-shadow:var(--shadow);">
+        <!-- 日曆注入 -->
     </div>
   </div>
 
-  <!-- 底部導航 -->
+  <!-- ════════ 底部導航 ════════ -->
   <nav class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('home')"><span>📒 記帳本</span></div>
-    <div class="nav-item" onclick="switchTab('chart')"><span>📊 圖表</span></div>
-    <div class="nav-item" onclick="switchTab('more')"><span>⚙️ 更多</span></div>
+    <div class="nav-item active" id="nav-home" onclick="switchScreen('screen-home')">
+      <span class="nav-icon">📒</span><span>記帳本</span>
+    </div>
+    <div class="nav-item" id="nav-chart" onclick="switchScreen('screen-chart')">
+      <span class="nav-icon">🥧</span><span>分析</span>
+    </div>
+    <div class="nav-item" id="nav-cal" onclick="switchScreen('screen-cal')">
+      <span class="nav-icon">📅</span><span>日曆</span>
+    </div>
   </nav>
 
-  <div class="fab" onclick="openAddModal()">+</div>
+  <button class="fab" onclick="openAddModal()">+</button>
 </div>
 
-<!-- 記帳彈窗 -->
+<!-- ════════ 記帳彈窗 ════════ -->
 <div class="modal-overlay" id="add-modal">
-    <div class="modal-sheet">
-        <div style="padding: 20px; text-align: center; font-weight: bold; color: var(--purple);">新增支出</div>
-        <div id="amount-display" style="text-align: center; font-size: 48px; padding: 10px; color: var(--purple); font-weight: 300;">0</div>
-        
-        <!-- 簡易類別選單 -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px 20px;">
-            <div onclick="selectCat('food')" class="cat-icon">🍔</div>
-            <div onclick="selectCat('bus')" class="cat-icon">🚌</div>
-            <div onclick="selectCat('shop')" class="cat-icon">🛍️</div>
-            <div onclick="selectCat('play')" class="cat-icon">🎮</div>
-        </div>
-
-        <div class="numpad-grid">
-            <button class="num-btn" onclick="numInput('7')">7</button>
-            <button class="num-btn" onclick="numInput('8')">8</button>
-            <button class="num-btn" onclick="numInput('9')">9</button>
-            <button class="num-btn btn-purple" onclick="numDelete()">⌫</button>
-            <button class="num-btn" onclick="numInput('4')">4</button>
-            <button class="num-btn" onclick="numInput('5')">5</button>
-            <button class="num-btn" onclick="numInput('6')">6</button>
-            <button class="num-btn btn-purple" onclick="numInput('+')">+</button>
-            <button class="num-btn" onclick="numInput('1')">1</button>
-            <button class="num-btn" onclick="numInput('2')">2</button>
-            <button class="num-btn" onclick="numInput('3')">3</button>
-            <button class="num-btn btn-purple" onclick="saveRecord()" style="grid-row: span 2; height: 120px;">OK</button>
-            <button class="num-btn" onclick="numInput('0')" style="grid-column: span 2;">0</button>
-            <button class="num-btn" onclick="numInput('.')">.</button>
-        </div>
+  <div class="modal-sheet">
+    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+      <button onclick="closeAddModal()" style="background:none; border:none; font-size:18px; color:#CCC;">✕</button>
+      <span style="font-weight:bold; color:var(--purple);">新增支出</span>
+      <span style="width:20px;"></span>
     </div>
+    
+    <div id="amount-display" style="text-align:center; font-size:45px; padding:10px; color:var(--purple); font-weight:300;">0</div>
+    
+    <div class="numpad-grid">
+      <button class="num-btn" onclick="numInput('7')">7</button>
+      <button class="num-btn" onclick="numInput('8')">8</button>
+      <button class="num-btn" onclick="numInput('9')">9</button>
+      <button class="num-btn btn-op" onclick="numDelete()">⌫</button>
+      <button class="num-btn" onclick="numInput('4')">4</button>
+      <button class="num-btn" onclick="numInput('5')">5</button>
+      <button class="num-btn" onclick="numInput('6')">6</button>
+      <button class="num-btn btn-op" onclick="numInput('+')">+</button>
+      <button class="num-btn" onclick="numInput('1')">1</button>
+      <button class="num-btn" onclick="numInput('2')">2</button>
+      <button class="num-btn" onclick="numInput('3')">3</button>
+      <button class="num-btn btn-save" onclick="saveRecord()">OK</button>
+      <button class="num-btn" onclick="numInput('0')" style="grid-column: span 2;">0</button>
+      <button class="num-btn" onclick="numInput('.')">.</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// --- 核心邏輯 (繼承自你的版本) ---
-let records = JSON.parse(localStorage.getItem('my_records') || '[]');
+// --- 資料核心邏輯 ---
+let records = JSON.parse(localStorage.getItem('lzb_records') || '[]');
+let currentMonth = new Date().toISOString().slice(0,7);
 let amountStr = "";
+let donutChart = null;
 
-function openAddModal() {
-    document.getElementById('add-modal').classList.add('open');
+function saveData() { localStorage.setItem('lzb_records', JSON.stringify(records)); }
+
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navId = id.replace('screen', 'nav');
+  if(document.getElementById(navId)) document.getElementById(navId).classList.add('active');
+  
+  if(id === 'screen-chart') renderChart();
+  if(id === 'screen-home') renderHome();
 }
 
-function closeAddModal() {
-    document.getElementById('add-modal').classList.remove('open');
+function renderHome() {
+  const monthLabel = document.getElementById('month-label');
+  const [y, m] = currentMonth.split('-');
+  monthLabel.innerText = `${y}年${parseInt(m)}月`;
+
+  const recs = records.filter(r => r.date.startsWith(currentMonth));
+  const income = recs.filter(r => r.type==='income').reduce((a,r)=>a+r.amount,0);
+  const expense = recs.filter(r => r.type==='expense').reduce((a,r)=>a+r.amount,0);
+  
+  document.getElementById('sum-income').innerText = `$${income}`;
+  document.getElementById('sum-expense').innerText = `$${expense}`;
+  document.getElementById('sum-total').innerText = `$${income - expense}`;
+
+  const list = document.getElementById('tx-list');
+  list.innerHTML = "";
+  
+  recs.slice().reverse().forEach(r => {
+    list.innerHTML += `
+      <div class="date-group">
+        <div class="date-header">${r.date}</div>
+        <div class="tx-item">
+          <div class="tx-icon">🍔</div>
+          <div class="tx-info">
+            <div class="tx-name">餐飲</div>
+          </div>
+          <div class="tx-amount ${r.type==='expense'?'red':'green'}">
+            ${r.type==='expense'?'-':'+'}$${r.amount}
+          </div>
+        </div>
+      </div>
+    `;
+  });
 }
+
+// --- 記帳邏輯 ---
+function openAddModal() { document.getElementById('add-modal').classList.add('open'); }
+function closeAddModal() { document.getElementById('add-modal').classList.remove('open'); }
 
 function numInput(val) {
-    amountStr += val;
-    document.getElementById('amount-display').innerText = amountStr;
+  amountStr += val;
+  document.getElementById('amount-display').innerText = amountStr;
 }
-
 function numDelete() {
-    amountStr = amountStr.slice(0, -1);
-    document.getElementById('amount-display').innerText = amountStr || "0";
+  amountStr = amountStr.slice(0, -1);
+  document.getElementById('amount-display').innerText = amountStr || "0";
 }
 
 function saveRecord() {
-    if(!amountStr) return;
-    const newRecord = {
-        id: Date.now(),
-        amount: parseFloat(amountStr),
-        cat: 'food',
-        date: new Date().toLocaleDateString(),
-        type: 'expense'
-    };
-    records.push(newRecord);
-    localStorage.setItem('my_records', JSON.stringify(records));
-    amountStr = "";
-    document.getElementById('amount-display').innerText = "0";
-    closeAddModal();
-    renderList();
+  if(!amountStr) return;
+  const newRecord = {
+    id: Date.now().toString(),
+    amount: parseFloat(eval(amountStr)), // 支援簡單加法
+    cat: 'food',
+    type: 'expense',
+    date: new Date().toISOString().slice(0,10)
+  };
+  records.push(newRecord);
+  saveData();
+  amountStr = "";
+  document.getElementById('amount-display').innerText = "0";
+  closeAddModal();
+  renderHome();
 }
 
-function renderList() {
-    const listEl = document.getElementById('tx-list');
-    listEl.innerHTML = "";
-    // 簡單展示最近 5 筆
-    records.slice().reverse().forEach(r => {
-        listEl.innerHTML += `
-            <div class="tx-item">
-                <div class="tx-icon">🍔</div>
-                <div class="tx-info">
-                    <div class="tx-title">餐飲</div>
-                    <div class="tx-note">${r.date}</div>
-                </div>
-                <div class="tx-amount amount-expense">-$${r.amount}</div>
-            </div>
-        `;
-    });
+function changeMonth(dir) {
+  const [y, m] = currentMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + dir, 1);
+  currentMonth = d.toISOString().slice(0,7);
+  renderHome();
 }
 
-function switchTab(tab) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('screen-' + tab).classList.add('active');
+// --- 圖表邏輯 ---
+function renderChart() {
+  const ctx = document.getElementById('donut-canvas');
+  if(donutChart) donutChart.destroy();
+  
+  const recs = records.filter(r => r.date.startsWith(currentMonth) && r.type==='expense');
+  const data = recs.map(r => r.amount);
+  
+  donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: data.length ? data : [1],
+        backgroundColor: ['#C38ED5', '#9B59B6', '#F3E5F5', '#E0D0EC']
+      }]
+    },
+    options: { cutout: '70%' }
+  });
 }
 
 // 點擊遮罩關閉
@@ -281,8 +303,7 @@ document.getElementById('add-modal').onclick = function(e) {
 };
 
 // 初始化
-renderList();
+renderHome();
 </script>
-
 </body>
 </html>
