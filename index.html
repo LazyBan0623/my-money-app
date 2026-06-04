@@ -341,4 +341,23 @@ function renderAnnual() {
         labels.push(ym.slice(5));
     }
     if(charts.annual) charts.annual.destroy();
-    charts.
+    charts.annual = new Chart(document.getElementById('annual-canvas'), {
+        type: 'line', data: { labels: labels, datasets: [{ data: trend, borderColor: '#C38ED5', tension: 0.4 }] },
+        options: { plugins: { legend: { display: false } } }
+    });
+}
+
+function saveSettings() {
+    config.budget = parseFloat(document.getElementById('s-budget').value) || 20000;
+    config.balance = parseFloat(document.getElementById('s-balance').value) || 0;
+    saveC(); alert('儲存成功！'); renderHome();
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    renderHome();
+});
+</script>
+</body>
+</html>
