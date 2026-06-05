@@ -1,7 +1,7 @@
 {
   "name": "知恩手帳 Pro",
   "short_name": "知恩手帳",
-  "description": "專為 iPhone 優化的精緻記帳 App",
+  "description": "專為 iPhone 12 mini 優化的精緻記帳 App",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#F9F9FB",
