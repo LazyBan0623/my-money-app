@@ -1,773 +1,498 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>知恩手帳 Pro</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#b19ffb">
-    <link rel="manifest" href="manifest.json">
-    
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --purple: #b19ffb;
-            --purple-light: #f3f0ff;
-            --purple-dark: #8c76f7;
-            --bg: #f8f9fa;
-            --card: #ffffff;
-            --text: #2d3748;
-            --text-muted: #a0aec0;
-            --inc: #48bb78;
-            --exp: #f56565;
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --safe-top: env(safe-area-inset-top, 0px);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="知恩手帳">
+<link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/536/536060.png">
+<link rel="manifest" href="manifest.json">
+<title>知恩手帳 Pro v27</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --theme: #c38ed5;
+  --theme-dark: #a879b9;
+  --theme-light: #f7effa;
+  --bg: #F9F9FB;
+  --card: #FFFFFF;
+  --text: #2B2A35;
+  --text-sub: #8E8D9A;
+  --inc: #6BCB77;
+  --exp: #FF6B6B;
+  --radius: 24px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'M PLUS Rounded 1c', 'Manrope', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  height: 100dvh; /* 優化：改用 dvh 適應 iOS 虛擬鍵盤 */
+  overflow: hidden;
+  overscroll-behavior: none; /* 優化：防止 PWA 邊緣反彈與手勢衝突 */
+}
+#app { display: flex; flex-direction: column; height: 100%; position: relative; }
+.view { display: none; flex: 1; overflow-y: auto; padding: calc(16px + var(--safe-top)) 16px calc(90px + var(--safe-bottom)) 16px; -webkit-overflow-scrolling: touch; }
+.view.active { display: block; }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
+/* 頂部看板 */
+.header-card {
+  background: linear-gradient(135deg, var(--theme), var(--theme-dark));
+  border-radius: var(--radius);
+  padding: 24px;
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(195,142,213,0.25);
+  margin-bottom: 20px;
+}
+.h-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.h-title { font-size: 14px; font-weight: 700; opacity: 0.9; }
+.h-balance { font-size: 36px; font-weight: 800; font-family: 'Manrope', sans-serif; }
+.h-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 16px; }
+.g-label { font-size: 11px; opacity: 0.8; margin-bottom: 4px; font-weight: 700; }
+.g-val { font-size: 18px; font-weight: 800; font-family: 'Manrope', sans-serif; }
 
-        html, body {
-            height: 100dvh; /* 動態視埠高度，完美適應 iOS 鍵盤 */
-            width: 100%;
-            background-color: var(--bg);
-            font-family: 'M PLUS Rounded 1c', sans-serif;
-            color: var(--text);
-            overflow: hidden;
-            overscroll-behavior-y: none; /* 阻斷 iOS 上下橡皮筋彈出 */
-            overscroll-behavior-x: none; /* 阻斷 iOS 左右側滑返回手勢 */
-        }
+/* 卡片與清單 */
+.card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.02); margin-bottom: 16px; }
+.section-title { font-size: 16px; font-weight: 800; color: var(--text); margin: 8px 4px 12px 4px; display: flex; align-items: center; justify-content: space-between; }
+.item-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #F1F1F5; }
+.item-row:last-child { border-bottom: none; }
+.item-left { display: flex; align-items: center; gap: 14px; }
+.item-icon { width: 42px; height: 42px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.item-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.item-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
+.item-amt { font-size: 16px; font-weight: 800; font-family: 'Manrope', sans-serif; }
+.item-amt.inc { color: var(--inc); }
+.item-amt.exp { color: var(--text); }
 
-        #app {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
+/* 底部導覽列 */
+.nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: calc(70px + var(--safe-bottom));
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  display: flex; justify-content: space-around; align-items: center;
+  padding-bottom: var(--safe-bottom);
+  border-top: 1px solid rgba(0,0,0,0.03); z-index: 1000;
+}
+.nav-btn { background: none; border: none; color: var(--text-sub); display: flex; flex-direction: column; align-items: center; font-family: inherit; font-size: 10px; font-weight: 700; gap: 4px; width: 60px; cursor: pointer; }
+.nav-btn.active { color: var(--theme-dark); }
+.nav-add { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, var(--theme), var(--theme-dark)); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(195,142,213,0.4); border: none; cursor: pointer; transform: translateY(-10px); }
 
-        .screen {
-            display: none;
-            flex: 1;
-            flex-direction: column;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: calc(20px + var(--safe-top)) 20px calc(90px + var(--safe-bottom)) 20px;
-        }
+/* 彈窗樣式 */
+.modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.3); display: none; align-items: flex-end; z-index: 2000; }
+.modal.active { display: flex; }
+.modal-sheet { background: #fff; width: 100%; border-radius: 32px 32px 0 0; padding-bottom: var(--safe-bottom); display: flex; flex-direction: column; max-height: 94dvh; overflow: hidden; }
+.m-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 20px 10px 20px; }
+.m-title { font-size: 16px; font-weight: 800; }
+.m-close { border: none; background: #F1F1F5; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.m-scroll { flex: 1; overflow-y: auto; padding: 10px 20px; -webkit-overflow-scrolling: touch; }
 
-        .screen.active { display: flex; }
+/* 類別與帳戶群組 */
+.tabs { display: grid; grid-template-columns: 1fr 1fr; background: #F1F1F5; padding: 4px; border-radius: 14px; margin-bottom: 16px; }
+.tab { border: none; background: none; padding: 8px; font-family: inherit; font-weight: 700; font-size: 14px; color: var(--text-sub); border-radius: 10px; cursor: pointer; }
+.tab.active { background: #fff; color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.cat-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; border: none; background: none; font-family: inherit; }
+.cat-box { width: 48px; height: 48px; border-radius: 16px; background: #F9F9FB; color: #7A7A8A; display: flex; align-items: center; justify-content: center; }
+.cat-btn.active .cat-box { background: var(--theme-light); color: var(--theme-dark); transform: scale(1.03); }
+.cat-text { font-size: 11px; font-weight: 700; color: var(--text); }
 
-        /* Top Banner */
-        .top-banner {
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            padding: calc(30px + var(--safe-top)) 24px 40px 24px;
-            border-radius: 0 0 40px 40px;
-            color: white;
-            box-shadow: 0 10px 25px rgba(177, 159, 251, 0.3);
-        }
-        .tb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .tb-title { font-size: 24px; font-weight: 700; letter-spacing: 0.5px; }
-        .tb-month-btn {
-            background: rgba(255,255,255,0.2);
-            border: none; padding: 8px 16px; border-radius: 20px;
-            color: white; font-family: inherit; font-weight: 700;
-            display: flex; align-items: center; gap: 6px; cursor: pointer;
-            backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
-        }
-        .tb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .tb-label { font-size: 13px; color: rgba(255,255,255,0.8); margin-bottom: 4px; font-weight: 700; }
-        .tb-val { font-size: 22px; font-weight: 700; }
+/* 輸入與設定項目 */
+.form-item { background: #F9F9FB; border-radius: 16px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.form-item i { color: var(--text-sub); }
 
-        /* Nav Bar */
-        .nav-bar {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            height: calc(75px + var(--safe-bottom));
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            display: flex; justify-content: space-around; align-items: center;
-            padding-bottom: var(--safe-bottom);
-            border-top: 1px solid rgba(0,0,0,0.04); z-index: 999;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.02);
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center;
-            color: var(--text-muted); cursor: pointer; background: none; border: none;
-            font-family: inherit; font-size: 11px; font-weight: 700; gap: 4px; width: 60px;
-        }
-        .nav-item.active { color: var(--purple-dark); }
-        .nav-item i { width: 22px; height: 22px; }
-        
-        .nav-add-btn {
-            width: 58px; height: 58px; border-radius: 29px;
-            background: linear-gradient(135deg, var(--purple), var(--purple-dark));
-            color: white; border: none; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transform: translateY(-15px);
-            box-shadow: 0 8px 20px rgba(177, 159, 251, 0.5);
-        }
-        .nav-add-btn i { width: 28px; height: 28px; }
+/* 優化：將 input 字體提升至 16px，徹底解決 iOS 聚焦自動放大畫面的問題 */
+.form-item input { border: none; background: none; outline: none; font-family: inherit; font-size: 16px; color: var(--text); flex: 1; }
+.form-item input::placeholder { font-size: 13px; color: var(--text-sub); }
+.form-select { border: none; background: none; outline: none; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--text); flex: 1; cursor: pointer; }
 
-        /* Section Title & Cards */
-        .section-title { font-size: 18px; font-weight: 700; color: var(--text); margin: 24px 0 16px 4px; }
-        .card {
-            background: var(--card); border-radius: 24px; padding: 20px;
-            box-shadow: 0 8px 18px rgba(0,0,0,0.02); margin-bottom: 16px;
-        }
+/* 計算機鍵盤 */
+.k-box { background: #F9F9FB; padding: 16px 20px calc(12px + var(--safe-bottom)) 20px; border-top: 1px solid #F1F1F5; }
+.k-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+.k-expr { font-size: 28px; font-weight: 800; color: var(--theme-dark); font-family: 'Manrope', sans-serif; }
+.k-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.k-btn { background: #fff; border: none; height: 48px; border-radius: 12px; font-family: inherit; font-size: 18px; font-weight: 700; color: var(--text); cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.01); display: flex; align-items: center; justify-content: center; }
+.k-btn:active { background: #F1F1F5; }
+.k-ok { background: linear-gradient(135deg, var(--theme), var(--theme-dark)); color: #fff; border: none; border-radius: 12px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; grid-column: span 1; grid-row: span 2; height: 104px; box-shadow: 0 4px 12px rgba(195,142,213,0.3); }
 
-        /* Rec List */
-        .rec-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 0; border-bottom: 1px solid #f1f3f5;
-        }
-        .rec-item:last-child { border-bottom: none; }
-        .rec-left { display: flex; align-items: center; gap: 14px; }
-        .rec-icon-box {
-            width: 44px; height: 44px; border-radius: 16px;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .rec-name { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
-        .rec-sub { font-size: 12px; color: var(--text-muted); }
-        .rec-amt { font-size: 16px; font-weight: 700; }
-        .rec-amt.inc { color: var(--inc); }
-        .rec-amt.exp { color: var(--text); }
-
-        /* Modal Overlay & Sheet */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.4); display: none; align-items: flex-end; z-index: 2000;
-        }
-        .modal-overlay.active { display: flex; }
-        
-        .modal-sheet {
-            background: white; width: 100%; border-radius: 35px 35px 0 0;
-            padding-bottom: var(--safe-bottom); height: 92dvh; /* 改用 dvh 完美契合 iOS 虛擬鍵盤 */
-            display: flex; flex-direction: column; overflow: hidden; position: relative;
-        }
-        
-        .modal-fixed-top { padding: 20px 24px 10px 24px; background: white; z-index: 10; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-close-btn { background: #f1f3f5; border: none; width: 36px; height: 36px; border-radius: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        
-        .type-tabs { display: grid; grid-template-columns: 1fr 1fr; background: #f1f3f5; padding: 4px; border-radius: 16px; }
-        .type-tab { border: none; padding: 10px; border-radius: 12px; font-family: inherit; font-weight: 700; font-size: 15px; cursor: pointer; background: none; color: var(--text-muted); }
-        .type-tab.active { background: white; color: var(--text); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-
-        .modal-scroll-box { flex: 1; overflow-y: auto; padding: 10px 24px; -webkit-overflow-scrolling: touch; }
-        
-        /* Category Grid */
-        .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
-        .cat-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
-        .cat-icon-box {
-            width: 52px; height: 52px; border-radius: 20px; background: #f8f9fa;
-            color: #718096; display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s ease;
-        }
-        .cat-item.active .cat-icon-box { background: var(--purple-light); color: var(--purple-dark); transform: scale(1.05); }
-        .cat-label { font-size: 12px; font-weight: 700; color: #4a5568; }
-
-        /* Form Inputs */
-        .modal-note-box {
-            background: #f8f9fa; border-radius: 20px; padding: 14px 18px;
-            display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px;
-        }
-        .modal-note-box i { color: var(--text-muted); width: 20px; height: 20px; }
-        
-        /* 核心防縮放優化：iOS input 必須大於等於 16px 防止畫面自動縮放放大 */
-        .modal-note-box input {
-            border: none; background: none; outline: none;
-            font-family: inherit; font-size: 16px; color: var(--text); flex: 1;
-        }
-        .modal-note-box input::placeholder { color: var(--text-muted); font-size: 14px; }
-        
-        #d-input { font-weight: 700; color: var(--text); text-align: right; border: none; background: none; font-size: 16px; outline: none; }
-
-        /* Custom Keyboard */
-        .modal-keyboard-box { padding: 16px 24px calc(16px + var(--safe-bottom)) 24px; background: #f8f9fa; border-top: 1px solid #edf2f7; }
-        .kb-display { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; padding: 4px; }
-        .kb-disp-label { font-size: 14px; font-weight: 700; color: var(--text-muted); }
-        .kb-disp-amt { font-size: 32px; font-weight: 700; color: var(--purple-dark); letter-spacing: 0.5px; }
-        
-        .modal-keyboard { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .kb-btn {
-            background: white; border: none; height: 54px; border-radius: 16px;
-            font-family: inherit; font-size: 20px; font-weight: 700; color: var(--text);
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-        }
-        .kb-btn:active { background: #edf2f7; }
-        .kb-btn.action { background: var(--purple-light); color: var(--purple-dark); }
-        .kb-btn.ok { background: linear-gradient(135deg, var(--purple), var(--purple-dark)); color: white; grid-row: span 2; height: 118px; }
-
-        /* Report & Asset Utilities */
-        .rep-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .year-select-box { display: flex; align-items: center; gap: 12px; }
-        .ys-btn { background: white; border: none; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
-        .ys-label { font-size: 18px; font-weight: 700; color: var(--text); }
-        
-        .chart-wrapper { width: 100%; max-width: 260px; margin: 20px auto; position: relative; }
-        
-        .ast-total-card {
-            background: linear-gradient(135deg, #2d3748, #1a202c); color: white;
-            padding: 26px; border-radius: 30px; box-shadow: 0 12px 25px rgba(0,0,0,0.08); margin-bottom: 24px;
-        }
-        .ast-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid #edf2f7; }
-        .ast-item:last-child { border-bottom: none; }
-        
-        /* Drawer Picker */
-        .drawer-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.4); display:none; align-items:flex-end; z-index:3000; }
-        .drawer-overlay.active { display: flex; }
-        .drawer-content { background:white; width:100%; border-radius:30px 30px 0 0; padding:24px 24px calc(24px + var(--safe-bottom)) 24px; max-height: 60dvh; overflow-y:auto; }
-        .drawer-title { font-size: 18px; font-weight: 700; margin-bottom: 18px; text-align: center; }
-        .drawer-option { padding: 16px; text-align: center; font-size: 16px; font-weight: 700; border-bottom: 1px solid #f1f3f5; cursor: pointer; }
-        .drawer-option:last-child { border-bottom: none; }
-
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 14px; font-weight: 700; }
-        .empty-state i { width: 48px; height: 48px; margin-bottom: 12px; stroke-width: 1.5; }
-    </style>
+/* 圖表 */
+.chart-container { position: relative; width: 180px; height: 180px; margin: 16px auto; }
+.theme-dot { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+.theme-dot.active { border-color: var(--text); transform: scale(1.1); }
+.empty { text-align: center; padding: 32px 0; color: var(--text-sub); font-size: 13px; font-weight: 700; }
+</style>
 </head>
 <body>
-
 <div id="app">
-    <div id="scr-home" class="screen active">
-        <div class="top-banner">
-            <div class="tb-header">
-                <span class="tb-title">知恩手帳 Pro</span>
-                <button class="tb-month-btn" onclick="openMonthPicker()">
-                    <span id="home-month-label">2026 年 05 月</span>
-                    <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
-                </button>
-            </div>
-            <div style="font-size: 14px; color: rgba(255,255,255,0.8); margin-bottom: 6px; font-weight: 700;">本月結餘</div>
-            <div id="home-bal" class="tb-val" style="font-size: 36px; margin-bottom: 24px; letter-spacing: 0.5px;">$0</div>
-            <div class="tb-grid">
-                <div>
-                    <div class="tb-label">本月收入</div>
-                    <div id="home-inc" class="tb-val" style="color: #e6fffa;">$0</div>
-                </div>
-                <div>
-                    <div class="tb-label">本月支出</div>
-                    <div id="home-exp" class="tb-val" style="color: #fff5f5;">$0</div>
-                </div>
-            </div>
+  <div id="v-home" class="view active">
+    <div class="header-card">
+      <div class="h-row">
+        <span id="h-name-lbl" class="h-title" style="font-size:16px;">知恩的手帳</span>
+        <span id="h-desc-lbl" style="font-size:11px; opacity:0.8; font-weight:700;">財富自由</span>
+      </div>
+      <div class="g-label" style="opacity:0.9;">目前結餘</div>
+      <div id="h-net" class="h-balance">$0</div>
+      <div class="h-grid">
+        <div>
+          <div class="g-label">本月累計收入</div>
+          <div id="h-inc" class="g-val" style="color:#fff;">$0</div>
         </div>
-        
-        <h3 class="section-title">每日明細</h3>
-        <div id="home-list-container"></div>
+        <div>
+          <div class="g-label">預算剩餘 / 總額</div>
+          <div id="h-bud" class="g-val" style="color:#fff;">$0</div>
+        </div>
+      </div>
     </div>
+    <div class="section-title">每日明細</div>
+    <div id="home-list"></div>
+  </div>
 
-    <div id="scr-rep" class="screen">
-        <div class="rep-header">
-            <h2 style="font-size: 22px; font-weight: 700;">統計分析</h2>
-            <div class="year-select-box">
-                <button class="ys-btn" onclick="adjYear(-1)"><i data-lucide="chevron-left"></i></button>
-                <span id="rep-year-label" class="ys-label">2026</span>
-                <button class="ys-btn" onclick="adjYear(1)"><i data-lucide="chevron-right"></i></button>
-            </div>
-        </div>
-        
-        <div class="type-tabs" style="margin-bottom: 20px;">
-            <button id="rep-tab-exp" class="type-tab active" onclick="setRepType('EXP')">支出</button>
-            <button id="rep-tab-inc" class="type-tab" onclick="setRepType('INC')">收入</button>
-        </div>
-
-        <div class="card" style="display: flex; flex-direction: column; align-items: center;">
-            <div class="chart-wrapper">
-                <canvas id="pie-canvas"></canvas>
-            </div>
-        </div>
-
-        <h3 class="section-title">分類排行</h3>
-        <div id="rep-list" class="card"></div>
+  <div id="v-chart" class="view">
+    <div class="tabs">
+      <button id="c-tab-exp" class="tab active" onclick="setChartType('EXP')">支出分析</button>
+      <button id="c-tab-inc" class="tab" onclick="setChartType('INC')">收入分析</button>
     </div>
-
-    <div id="scr-ast" class="screen">
-        <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 20px;">資產賬戶</h2>
-        <div class="ast-total-card">
-            <div style="font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 6px; font-weight: 700;">總資產淨值</div>
-            <div id="ast-total-net" style="font-size: 32px; font-weight: 700;">$0</div>
-        </div>
-        
-        <h3 class="section-title">賬戶清單</h3>
-        <div id="ast-list" class="card"></div>
+    <div class="card">
+      <div class="chart-container"><canvas id="pie-canvas"></canvas></div>
     </div>
+    <div class="section-title">分類排行</div>
+    <div class="card" id="chart-list" style="padding: 4px 20px;"></div>
+  </div>
 
-    <nav class="nav-bar">
-        <button id="nav-home" class="nav-item active" onclick="switchScr('home')">
-            <i data-lucide="wallet"></i>明細
-        </button>
-        <button id="nav-rep" class="nav-item" onclick="switchScr('rep')">
-            <i data-lucide="pie-chart"></i>統計
-        </button>
-        <button class="nav-add-btn" onclick="openA('EXP')">
-            <i data-lucide="plus"></i>
-        </button>
-        <button id="nav-ast" class="nav-item" onclick="switchScr('ast')">
-            <i data-lucide="layers"></i>資產
-        </button>
-        <button class="nav-item" onclick="clearAllData()">
-            <i data-lucide="refresh-cw"></i>重置
-        </button>
-    </nav>
+  <div id="v-set" class="view">
+    <div class="section-title">賬戶餘額初始化</div>
+    <div class="card">
+      <div class="form-item"><i data-lucide="user"></i><input type="text" id="s-name" placeholder="手帳名稱"></div>
+      <div class="form-item"><i data-lucide="heart"></i><input type="text" id="s-desc" placeholder="期許格言"></div>
+      <div class="form-item"><i data-lucide="coins"></i><input type="number" id="s-balance" placeholder="初始總資產"></div>
+      <div class="form-item"><i data-lucide="sliders"></i><input type="number" id="s-budget" placeholder="每月預算限額"></div>
+    </div>
+    <div class="section-title">主題色彩</div>
+    <div class="card" style="display:flex; gap:16px; justify-content:center;">
+      <div class="theme-dot" style="background:#c38ed5;" onclick="setTheme('#c38ed5')"></div>
+      <div class="theme-dot" style="background:#6c5ce7;" onclick="setTheme('#6c5ce7')"></div>
+      <div class="theme-dot" style="background:#ff7675;" onclick="setTheme('#ff7675')"></div>
+      <div class="theme-dot" style="background:#2ed573;" onclick="setTheme('#2ed573')"></div>
+      <div class="theme-dot" style="background:#2f3542;" onclick="setTheme('#2f3542')"></div>
+    </div>
+    <button onclick="saveS()" style="width:100%; height:48px; border-radius:14px; border:none; background:linear-gradient(135deg, var(--theme), var(--theme-dark)); color:#fff; font-family:inherit; font-weight:800; font-size:15px; cursor:pointer; box-shadow:0 4px 12px rgba(195,142,213,0.25);">儲存設定</button>
+  </div>
+
+  <nav class="nav">
+    <button id="n-home" class="nav-btn active" onclick="switchView('home')"><i data-lucide="wallet"></i>明細</button>
+    <button id="n-chart" class="nav-btn" onclick="switchView('chart')"><i data-lucide="pie-chart"></i>統計</button>
+    <button class="nav-add" onclick="openA('EXP')"><i data-lucide="plus"></i></button>
+    <button id="n-set" class="nav-btn" onclick="switchView('set')"><i data-lucide="settings"></i>設定</button>
+  </nav>
 </div>
 
-<div id="modal-overlay" class="modal-overlay" onclick="closeA(event)">
-    <div class="modal-sheet" onclick="event.stopPropagation()">
-        <div class="modal-fixed-top">
-            <div class="modal-header">
-                <h3 id="modal-title" style="font-size: 18px; font-weight: 700;">新增帳目</h3>
-                <button class="modal-close-btn" onclick="closeA()"><i data-lucide="x" style="width:18px; height:18px;"></i></button>
-            </div>
-            <div class="type-tabs">
-                <button id="m-tab-exp" class="type-tab" onclick="setMType('EXP')">支出</button>
-                <button id="m-tab-inc" class="type-tab" onclick="setMType('INC')">收入</button>
-            </div>
-        </div>
-
-        <div class="modal-scroll-box">
-            <div id="m-cat-grid" class="cat-grid"></div>
-            
-            <div class="modal-note-box">
-                <i data-lucide="credit-card"></i>
-                <input type="text" id="acc-select-trigger" readonly onclick="openAccPicker()" value="現金" style="cursor: pointer; font-weight: 700;">
-                <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
-            </div>
-
-            <div class="modal-note-box">
-                <i data-lucide="edit-3"></i>
-                <input type="text" id="n-input" placeholder="輸入備註說明...">
-            </div>
-
-            <div class="modal-note-box">
-                <i data-lucide="calendar"></i>
-                <input type="date" id="d-input">
-            </div>
-        </div>
-
-        <div class="modal-keyboard-box">
-            <div class="kb-display">
-                <span class="kb-disp-label">金額</span>
-                <span id="kb-expr" class="kb-disp-amt">$0</span>
-            </div>
-            <div class="modal-keyboard">
-                <button class="kb-btn" onclick="pressK('7')">7</button>
-                <button class="kb-btn" onclick="pressK('8')">8</button>
-                <button class="kb-btn" onclick="pressK('9')">9</button>
-                <button class="kb-btn action" onclick="pressK('DEL')"><i data-lucide="delete" style="width:22px; height:22px;"></i></button>
-                
-                <button class="kb-btn" onclick="pressK('4')">4</button>
-                <button class="kb-btn" onclick="pressK('5')">5</button>
-                <button class="kb-btn" onclick="pressK('6')">6</button>
-                <button class="kb-btn action" onclick="pressK('+')">+</button>
-                
-                <button class="kb-btn" onclick="pressK('1')">1</button>
-                <button class="kb-btn" onclick="pressK('2')">2</button>
-                <button class="kb-btn" onclick="pressK('3')">3</button>
-                <button class="kb-btn ok" onclick="saveR()">OK</button>
-                
-                <button class="kb-btn" onclick="pressK('.')">.</button>
-                <button class="kb-btn" onclick="pressK('0')">0</button>
-                <button class="kb-btn action" onclick="pressK('C')">C</button>
-            </div>
-        </div>
+<div id="modal-overlay" class="modal" onclick="closeA(event)">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="m-header">
+      <h3 id="m-title" class="m-title">記一筆</h3>
+      <button class="m-close" onclick="closeA()"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
     </div>
-</div>
-
-<div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()">
-    <div class="drawer-content" onclick="event.stopPropagation()">
-        <div id="drawer-title" class="drawer-title">選擇項目</div>
-        <div id="drawer-options-box"></div>
+    <div class="m-scroll">
+      <div class="tabs">
+        <button id="m-tab-exp" class="tab" onclick="setMType('EXP')">支出</button>
+        <button id="m-tab-inc" class="tab" onclick="setMType('INC')">收入</button>
+      </div>
+      <div id="m-cats" class="cat-grid"></div>
+      <div class="form-item">
+        <i data-lucide="credit-card"></i>
+        <select id="m-acc" class="form-select"></select>
+      </div>
+      <div class="form-item">
+        <i data-lucide="calendar"></i>
+        <input type="date" id="d-input" style="font-weight:700;">
+      </div>
+      <div class="form-item">
+        <i data-lucide="edit-2"></i>
+        <input type="text" id="n-input" placeholder="備註說明...">
+      </div>
+      <button id="m-del-btn" onclick="delItem()" style="display:none; width:100%; height:42px; border-radius:12px; border:1px solid var(--exp); background:none; color:var(--exp); font-family:inherit; font-weight:700; font-size:13px; cursor:pointer; margin-bottom:12px;">刪除此筆紀錄</button>
     </div>
+    <div class="k-box">
+      <div class="k-top"><span style="font-size:12px; font-weight:700; color:var(--text-sub);">金額</span><span id="k-expr" class="k-expr">$0</span></div>
+      <div id="k-container" class="k-grid"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-// --- CONSTANTS & STATE ---
 const CATS = [
-    { id: 'c1', name: '餐飲飲食', icon: 'utensils', type: 'EXP', color: '#ff9f43' },
-    { id: 'c2', name: '購物消費', icon: 'shopping-bag', type: 'EXP', color: '#54a0ff' },
-    { id: 'c3', name: '交通出行', icon: 'car', type: 'EXP', color: '#1dd1a1' },
-    { id: 'c4', name: '居家生活', icon: 'home', type: 'EXP', color: '#feca57' },
-    { id: 'c5', name: '休閒娛樂', icon: 'gamepad-2', type: 'EXP', color: '#ff6b6b' },
-    { id: 'c6', name: '薪資收入', icon: 'coins', type: 'INC', color: '#1dd1a1' },
-    { id: 'c7', name: '獎金外快', icon: 'gift', type: 'INC', color: '#ff6b6b' },
-    { id: 'c8', name: '投資理財', icon: 'trending-up', type: 'INC', color: '#54a0ff' }
+  { id: 'c1', name: '餐飲飲食', icon: 'utensils', type: 'EXP', color: '#ff9f43' },
+  { id: 'c2', name: '購物消費', icon: 'shopping-bag', type: 'EXP', color: '#54a0ff' },
+  { id: 'c3', name: '交通出行', icon: 'car', type: 'EXP', color: '#1dd1a1' },
+  { id: 'c4', name: '居家生活', icon: 'home', type: 'EXP', color: '#feca57' },
+  { id: 'c5', name: '休閒娛樂', icon: 'gamepad-2', type: 'EXP', color: '#ff6b6b' },
+  { id: 'c6', name: '薪資收入', icon: 'coins', type: 'INC', color: '#2ed573' },
+  { id: 'c7', name: '獎金紅包', icon: 'gift', type: 'INC', color: '#ff4757' },
+  { id: 'c8', name: '投資收益', icon: 'trending-up', type: 'INC', color: '#1e90ff' }
 ];
-
 const ACCS = [
-    { id: 'a1', name: '現金', icon: 'wallet', color: '#48bb78' },
-    { id: 'a2', name: '銀行卡', icon: 'credit-card', color: '#4299e1' },
-    { id: 'a3', name: '行動支付', icon: 'smartphone', color: '#9f7aea' }
+  { id: 'a1', name: '現金儲值', icon: 'wallet' },
+  { id: 'a2', name: '銀行帳戶', icon: 'credit-card' },
+  { id: 'a3', name: '信用卡卡', icon: 'landmark' }
 ];
 
-let records = JSON.parse(localStorage.getItem('lzb_v24_recs')) || [];
-let curScr = 'home';
-let charts = { pie: null };
+let records = JSON.parse(localStorage.getItem('lzb_v27_recs')) || [];
+let config = JSON.parse(localStorage.getItem('cfg_v27')) || { name: '知恩的手帳', desc: '財富自由', balance: 0, budget: 20000, theme: '#c38ed5' };
+let state = { view: 'home', chartType: 'EXP', id: null, type: 'EXP', acc: 'a1', cat: 'c1', amt: '' };
+let chartInstance = null;
 
-let state = {
-    month: new Date().toISOString().slice(0, 7), // YYYY-MM
-    repYear: new Date().getFullYear(),
-    repType: 'EXP',
-    id: null, type: 'EXP', acc: 'a1', cat: 'c1', amt: ''
-};
-
-// --- CORE APP INIT ---
 window.addEventListener('DOMContentLoaded', () => {
-    lucide.createIcons();
-    renderHome();
-    
-    // 註冊 Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration failed:', err));
-    }
+  setTheme(config.theme);
+  renderAccOptions();
+  renderKeyboard();
+  switchView('home');
+  lucide.createIcons();
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(err=>console.log(err));
 });
 
-function switchScr(s) {
-    curScr = s;
-    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    
-    document.getElementById(`scr-${s}`).classList.add('active');
-    document.getElementById(`nav-${s}`).classList.add('active');
-    
-    if(s === 'home') renderHome();
-    if(s === 'rep') renderRep();
-    if(s === 'ast') renderAst();
+function setTheme(hex) {
+  config.theme = hex;
+  document.documentElement.style.setProperty('--theme', hex);
+  // 計算黑化調性色
+  let r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  document.documentElement.style.setProperty('--theme-dark', `rgb(${Math.max(0,r-30)},${Math.max(0,g-30)},${Math.max(0,b-30)})`);
+  document.documentElement.style.setProperty('--theme-light', `rgba(${r},${g},${b},0.08)`);
+  document.querySelectorAll('.theme-dot').forEach(el => {
+    el.classList.toggle('active', el.style.backgroundColor === hex || (hex === '#c38ed5' && el.style.backgroundColor.includes('195')));
+  });
 }
 
-// --- HOME SCREEN LOGIC ---
+function renderAccOptions() {
+  document.getElementById('m-acc').innerHTML = ACCS.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
+}
+
+function switchView(v) {
+  state.view = v;
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById(`v-${v}`).classList.add('active');
+  document.getElementById(`n-${v}`).classList.add('active');
+  if(v==='home') renderHome();
+  if(v==='chart') renderChart();
+  if(v==='set') {
+    document.getElementById('s-name').value = config.name;
+    document.getElementById('s-desc').value = config.desc;
+    document.getElementById('s-balance').value = config.balance;
+    document.getElementById('s-budget').value = config.budget;
+  }
+}
+
 function renderHome() {
-    document.getElementById('home-month-label').innerText = `${state.month.slice(0,4)} 年 ${state.month.slice(5,7)} 月`;
-    
-    let mRecs = records.filter(r => r.date.startsWith(state.month));
-    let inc = mRecs.filter(r => r.type === 'INC').reduce((a, b) => a + Number(b.amt), 0);
-    let exp = mRecs.filter(r => r.type === 'EXP').reduce((a, b) => a + Number(b.amt), 0);
-    
-    document.getElementById('home-inc').innerText = `$${inc.toLocaleString()}`;
-    document.getElementById('home-exp').innerText = `$${exp.toLocaleString()}`;
-    document.getElementById('home-bal').innerText = `$${(inc - exp).toLocaleString()}`;
+  document.getElementById('h-name-lbl').innerText = config.name;
+  document.getElementById('h-desc-lbl').innerText = config.desc;
+  
+  let inc = records.filter(r=>r.type==='INC').reduce((sum,r)=>sum+Number(r.amt), 0);
+  let exp = records.filter(r=>r.type==='EXP').reduce((sum,r)=>sum+Number(r.amt), 0);
+  
+  document.getElementById('h-net').innerText = `$${(config.balance + inc - exp).toLocaleString()}`;
+  document.getElementById('h-inc').innerText = `$${inc.toLocaleString()}`;
+  document.getElementById('h-bud').innerText = `$${Math.max(0, config.budget - exp).toLocaleString()} / ${config.budget.toLocaleString()}`;
 
-    let container = document.getElementById('home-list-container');
-    container.innerHTML = '';
+  let container = document.getElementById('home-list');
+  container.innerHTML = '';
+  if(records.length === 0) {
+    container.innerHTML = `<div class="empty"><p>尚無任何帳目明細</p></div>`;
+    return;
+  }
 
-    if(mRecs.length === 0) {
-        container.innerHTML = `<div class="empty-state"><i data-lucide="database"></i><p>這個月還沒有任何帳目喔</p></div>`;
-        lucide.createIcons();
-        return;
-    }
-
-    // 按日期降序排列明細
-    let groups = {};
-    mRecs.forEach(r => { groups[r.date] = groups[r.date] || []; groups[r.date].push(r); });
-    let sortedDates = Object.keys(groups).sort((a,b) => b.localeCompare(a));
-
-    sortedDates.forEach(d => {
-        let card = document.createElement('div');
-        card.className = 'card';
-        
-        let dateHeader = document.createElement('div');
-        dateHeader.style = 'font-size:13px; font-weight:700; color:var(--text-muted); margin-bottom:12px; border-bottom:1px solid #f1f3f5; padding-bottom:6px;';
-        dateHeader.innerText = d;
-        card.appendChild(dateHeader);
-
-        groups[d].forEach(r => {
-            let catObj = CATS.find(c => c.id === r.cat) || { name: '未知', icon: 'help-circle', color: '#cbd5e0' };
-            let accObj = ACCS.find(a => a.id === r.acc) || { name: '未知' };
-            
-            let item = document.createElement('div');
-            item.className = 'rec-item';
-            item.onclick = () => openA(r.type, r);
-            item.innerHTML = `
-                <div class="rec-left">
-                    <div class="rec-icon-box" style="background:${catObj.color}15; color:${catObj.color};">
-                        <i data-lucide="${catObj.icon}" style="width:20px; height:20px;"></i>
-                    </div>
-                    <div>
-                        <div class="rec-name">${r.note}</div>
-                        <div class="rec-sub">${catObj.name} · ${accObj.name}</div>
-                    </div>
-                </div>
-                <div class="rec-amt ${r.type === 'INC' ? 'inc' : 'exp'}">
-                    ${r.type === 'INC' ? '+' : '-'}$${Number(r.amt).toLocaleString()}
-                </div>
-            `;
-            card.appendChild(item);
-        });
-        container.appendChild(card);
-    });
-    lucide.createIcons();
+  // 按日期降序排列
+  let sorted = [...records].sort((a,b)=>b.date.localeCompare(a.date));
+  sorted.forEach(r => {
+    let catObj = CATS.find(c=>c.id===r.cat) || { name: '未知', icon: 'help-circle', color: '#cbd5e0' };
+    let accObj = ACCS.find(a=>a.id===r.acc) || { name: '未知' };
+    let row = document.createElement('div');
+    row.className = 'item-row';
+    row.onclick = () => openA(r.type, r);
+    row.innerHTML = `
+      <div class="item-left">
+        <div class="item-icon" style="background:${catObj.color}12; color:${catObj.color};">
+          <i data-lucide="${catObj.icon}" style="width:20px; height:20px;"></i>
+        </div>
+        <div>
+          <div class="item-name">${r.note}</div>
+          <div class="item-sub">${catObj.name} · ${accObj.name} · ${r.date}</div>
+        </div>
+      </div>
+      <div class="item-amt ${r.type==='INC'?'inc':'exp'}">
+        ${r.type==='INC'?'+':'-'}$${Number(r.amt).toLocaleString()}
+      </div>
+    `;
+    container.appendChild(row);
+  });
+  lucide.createIcons();
 }
 
-// --- MONTH PICKER DRAWER ---
-function openMonthPicker() {
-    let months = [];
-    let d = new Date();
-    for(let i=0; i<12; i++) {
-        months.push(d.toISOString().slice(0,7));
-        d.setMonth(d.getMonth() - 1);
-    }
-    
-    document.getElementById('drawer-title').innerText = '選擇月份';
-    let box = document.getElementById('drawer-options-box');
-    box.innerHTML = '';
-    
-    months.forEach(m => {
-        let opt = document.createElement('div');
-        opt.className = 'drawer-option';
-        opt.innerText = `${m.slice(0,4)} 年 ${m.slice(5,7)} 月`;
-        opt.onclick = () => { state.month = m; closeDrawer(); renderHome(); };
-        box.appendChild(opt);
-    });
-    document.getElementById('drawer-overlay').classList.add('active');
+function setChartType(t) { state.chartType = t; document.getElementById('c-tab-exp').className=`tab ${t==='EXP'?'active':''}`; document.getElementById('c-tab-inc').className=`tab ${t==='INC'?'active':''}`; renderChart(); }
+
+function renderChart() {
+  // 優化點：嚴格銷毀舊 Chart 實例，杜絕 iOS 記憶體溢流閃退
+  if(chartInstance) {
+    chartInstance.destroy();
+    chartInstance = null;
+  }
+
+  let filtered = records.filter(r=>r.type === state.chartType);
+  let map = {};
+  CATS.filter(c=>c.type===state.chartType).forEach(c=>map[c.id]=0);
+  filtered.forEach(r=>{ if(map[r.cat]!==undefined) map[r.cat] += Number(r.amt); });
+
+  let dataList = [];
+  Object.keys(map).forEach(cid => { if(map[cid]>0) dataList.push({ cid, amt: map[cid] }); });
+  dataList.sort((a,b)=>b.amt-a.amt);
+
+  let listContainer = document.getElementById('chart-list');
+  listContainer.innerHTML = '';
+
+  if(dataList.length === 0) {
+    listContainer.innerHTML = `<div class="empty"><p>尚無統計數據</p></div>`;
+    return;
+  }
+
+  dataList.forEach(item => {
+    let cObj = CATS.find(c=>c.id===item.cid);
+    let row = document.createElement('div');
+    row.className = 'item-row';
+    row.innerHTML = `
+      <div class="item-left">
+        <div class="item-icon" style="background:${cObj.color}12; color:${cObj.color};">
+          <i data-lucide="${cObj.icon}" style="width:20px; height:20px;"></i>
+        </div>
+        <div class="item-name">${cObj.name}</div>
+      </div>
+      <div class="item-amt" style="color:var(--text);">$${item.amt.toLocaleString()}</div>
+    `;
+    listContainer.appendChild(row);
+  });
+  lucide.createIcons();
+
+  let ctx = document.getElementById('pie-canvas').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: dataList.map(x=>CATS.find(c=>c.id===x.cid).name),
+      datasets: [{
+        data: dataList.map(x=>x.amt),
+        backgroundColor: dataList.map(x=>CATS.find(c=>c.id===x.cid).color),
+        borderWidth: 0
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, cutout: '72%' }
+  });
 }
 
-function openAccPicker() {
-    document.getElementById('drawer-title').innerText = '選擇賬戶';
-    let box = document.getElementById('drawer-options-box');
-    box.innerHTML = '';
-    
-    ACCS.forEach(a => {
-        let opt = document.createElement('div');
-        opt.className = 'drawer-option';
-        opt.innerText = a.name;
-        opt.onclick = () => {
-            state.acc = a.id;
-            document.getElementById('acc-select-trigger').value = a.name;
-            closeDrawer();
-        };
-        box.appendChild(opt);
-    });
-    document.getElementById('drawer-overlay').classList.add('active');
+function openA(t, rObj=null) {
+  // 喚起彈窗時強制收起虛擬鍵盤，防範高度擠壓
+  document.activeElement.blur();
+
+  state.id = rObj ? rObj.id : null;
+  state.type = rObj ? rObj.type : t;
+  state.acc = rObj ? rObj.acc : 'a1';
+  let firstCat = CATS.find(c=>c.type===state.type);
+  state.cat = rObj ? rObj.cat : (firstCat?firstCat.id:'');
+  state.amt = rObj ? String(rObj.amt) : '';
+
+  document.getElementById('m-title').innerText = rObj ? '編輯明細' : '記一筆';
+  document.getElementById('m-del-btn').style.display = rObj ? 'block' : 'none';
+  document.getElementById('n-input').value = rObj ? rObj.note : '';
+  document.getElementById('d-input').value = rObj ? rObj.date : new Date().toISOString().slice(0,10);
+  document.getElementById('m-acc').value = state.acc;
+
+  updateMView();
+  document.getElementById('modal-overlay').classList.add('active');
 }
 
-function closeDrawer() { document.getElementById('drawer-overlay').classList.remove('active'); }
+function closeA(e=null) { if(!e || e.target === document.getElementById('modal-overlay')) document.getElementById('modal-overlay').classList.remove('active'); }
+function setMType(t) { state.type = t; let firstCat = CATS.find(c=>c.type===t); state.cat = firstCat?firstCat.id:''; updateMView(); }
 
-// --- TRANSACTION MODAL LOGIC ---
-function openA(t, rObj = null) {
-    // 點擊新增時，強制關閉原生鍵盤以防手勢與排版衝突
-    document.activeElement.blur();
-    
-    state.id = rObj ? rObj.id : null;
-    state.type = rObj ? rObj.type : t;
-    state.acc = rObj ? rObj.acc : 'a1';
-    
-    let defaultCat = CATS.find(c => c.type === state.type);
-    state.cat = rObj ? rObj.cat : (defaultCat ? defaultCat.id : '');
-    state.amt = rObj ? String(rObj.amt) : '';
-
-    document.getElementById('modal-title').innerText = rObj ? '編輯帳目' : '新增帳目';
-    document.getElementById('n-input').value = rObj ? rObj.note : '';
-    document.getElementById('d-input').value = rObj ? rObj.date : new Date().toISOString().slice(0,10);
-    
-    let accObj = ACCS.find(a => a.id === state.acc);
-    document.getElementById('acc-select-trigger').value = accObj ? accObj.name : '現金';
-
-    updateMTabs();
-    renderMCats();
-    updateKDisp();
-    
-    document.getElementById('modal-overlay').classList.add('active');
+function updateMView() {
+  document.getElementById('m-tab-exp').className = `tab ${state.type==='EXP'?'active':''}`;
+  document.getElementById('m-tab-inc').className = `tab ${state.type==='INC'?'active':''}`;
+  
+  let catBox = document.getElementById('m-cats');
+  catBox.innerHTML = '';
+  CATS.filter(c=>c.type===state.type).forEach(c => {
+    let btn = document.createElement('button');
+    btn.className = `cat-btn ${state.cat===c.id?'active':''}`;
+    btn.onclick = () => { state.cat = c.id; updateMView(); };
+    btn.innerHTML = `<div class="cat-box"><i data-lucide="${c.icon}" style="width:18px;height:18px;"></i></div><span class="cat-text">${c.name}</span>`;
+    catBox.appendChild(btn);
+  });
+  lucide.createIcons();
+  updateKDisp();
 }
 
-function closeA(e = null) {
-    if(!e || e.target === document.getElementById('modal-overlay')) {
-        document.getElementById('modal-overlay').classList.remove('active');
-    }
+function renderKeyboard() {
+  const keys = ['7','8','9','del','4','5','6','+','1','2','3','ok','0','.'];
+  const container = document.getElementById('k-container');
+  container.innerHTML = keys.map(k => {
+    if(k==='ok') return `<button onclick=\"saveR()\" class=\"k-ok\">OK</button>`;
+    if(k==='del') return `<button class=\"k-btn\" onclick=\"p('del')\"><i data-lucide=\"delete\" style=\"width:20px;margin:auto;\"></i></button>`;
+    return `<button class=\"k-btn\" onclick=\"p('${k}')\" ${k==='0'?'style=\"grid-column:span 2\"':''}>${k}</button>`;
+  }).join('');
 }
 
-function setMType(t) { state.type = t; let dCat = CATS.find(c => c.type === t); state.cat = dCat?dCat.id:''; updateMTabs(); renderMCats(); }
-function updateMTabs() {
-    document.getElementById('m-tab-exp').className = `type-tab ${state.type==='EXP'?'active':''}`;
-    document.getElementById('m-tab-inc').className = `type-tab ${state.type==='INC'?'active':''}`;
+function p(k) {
+  if(k==='del') state.amt = state.amt.slice(0,-1);
+  else if(k==='+') { if(state.amt && !state.amt.endsWith('+')) state.amt += '+'; }
+  else if(k==='.') {
+    let tokens = state.amt.split('+');
+    if(!tokens[tokens.length-1].includes('.')) state.amt += '.';
+  } else {
+    let tokens = state.amt.split('+');
+    if(tokens[tokens.length-1] === '0') tokens[tokens.length-1] = k;
+    else tokens[tokens.length-1] += k;
+    state.amt = tokens.join('+');
+  }
+  updateKDisp();
 }
-
-function renderMCats() {
-    let box = document.getElementById('m-cat-grid');
-    box.innerHTML = '';
-    CATS.filter(c => c.type === state.type).forEach(c => {
-        let item = document.createElement('div');
-        item.className = `cat-item ${state.cat === c.id ? 'active' : ''}`;
-        item.onclick = () => { state.cat = c.id; renderMCats(); };
-        item.innerHTML = `
-            <div class="cat-icon-box">
-                <i data-lucide="${c.icon}"></i>
-            </div>
-            <div class="cat-label">${c.name}</div>
-        `;
-        box.appendChild(item);
-    });
-    lucide.createIcons();
-}
-
-// --- KEYBOARD LOGIC ---
-function pressK(k) {
-    if(k === 'C') state.amt = '';
-    else if(k === 'DEL') state.amt = state.amt.slice(0, -1);
-    else if(k === '+') {
-        if(state.amt && !state.amt.endsWith('+')) state.amt += '+';
-    } else if(k === '.') {
-        let tokens = state.amt.split('+');
-        if(!tokens[tokens.length-1].includes('.')) state.amt += '.';
-    } else {
-        let tokens = state.amt.split('+');
-        if(tokens[tokens.length-1] === '0') tokens[tokens.length-1] = k;
-        else tokens[tokens.length-1] += k;
-        state.amt = tokens.join('+');
-    }
-    updateKDisp();
-}
-
-function updateKDisp() {
-    document.getElementById('kb-expr').innerText = state.amt ? `$${state.amt}` : '$0';
-}
+function updateKDisp() { document.getElementById('k-expr').innerText = state.amt ? `$${state.amt}` : '$0'; }
 
 function saveR() {
-    if(!state.amt) return;
-    let clean = state.amt.replace(/[^0-9+.]/g,'');
-    if(clean.endsWith('+')) clean = clean.slice(0,-1);
+  if(!state.amt) return;
+  let clean = state.amt.replace(/[^0-9+.]/g,'');
+  if(clean.endsWith('+')) clean = clean.slice(0,-1);
+  try {
+    // 優化點：捨棄潛在安全隱患的 eval()，改用安全的多項式陣列求和加總
+    const tokens = clean.split('+');
+    const val = tokens.reduce((sum, current) => sum + Number(current || 0), 0);
     
-    try {
-        // 優化點：捨棄潛在資安風險與卡頓的 eval，改用 Array.reduce 進行安全加總
-        let tokens = clean.split('+');
-        let finalVal = tokens.reduce((sum, token) => sum + Number(token || 0), 0);
-        
-        if(isNaN(finalVal) || finalVal <= 0) throw "invalid_val";
-        
-        let catObj = CATS.find(x => x.id === state.cat);
-        let noteStr = document.getElementById('n-input').value.trim() || (catObj ? catObj.name : '未分類');
-        let dateStr = document.getElementById('d-input').value;
-        
-        let d = { id: state.id || Date.now(), amt: finalVal, type: state.type, acc: state.acc, cat: state.cat, note: noteStr, date: dateStr };
-        
-        if(state.id) records = records.map(r => r.id === state.id ? d : r);
-        else records.push(d);
-        
-        localStorage.setItem('lzb_v24_recs', JSON.stringify(records));
-        closeA();
-        renderHome();
-    } catch(e) {
-        alert('金額輸入錯誤');
-    }
+    if(isNaN(val) || val <= 0) throw "err";
+    const d = { 
+      id: state.id||Date.now(), 
+      amt: val, 
+      type: state.type, 
+      acc: document.getElementById('m-acc').value, 
+      cat: state.cat, 
+      note: document.getElementById('n-input').value.trim()||CATS.find(x=>x.id===state.cat).name, 
+      date: document.getElementById('d-input').value 
+    };
+    if(state.id) records = records.map(r=>r.id===state.id ? d : r); else records.push(d);
+    localStorage.setItem('lzb_v27_recs', JSON.stringify(records)); 
+    closeA(); 
+    renderHome();
+  } catch(e){ alert('金額錯誤'); }
 }
-
-// --- STATISTICS SCREEN LOGIC ---
-function adjYear(v) { state.repYear += v; document.getElementById('rep-year-label').innerText = state.repYear; renderRep(); }
-function setRepType(t) { state.repType = t; document.getElementById('rep-tab-exp').className=`type-tab ${t==='EXP'?'active':''}`; document.getElementById('rep-tab-inc').className=`type-tab ${t==='INC'?'active':''}`; renderRep(); }
-
-function renderRep() {
-    document.getElementById('rep-year-label').innerText = state.repYear;
-    let yRecs = records.filter(r => r.date.startsWith(String(state.repYear)) && r.type === state.repType);
-    
-    let map = {};
-    CATS.filter(c => c.type === state.repType).forEach(c => map[c.id] = 0);
-    yRecs.forEach(r => { if(map[r.cat] !== undefined) map[r.cat] += Number(r.amt); });
-
-    let dataList = [];
-    Object.keys(map).forEach(cid => { if(map[cid] > 0) dataList.push({ cid, amt: map[cid] }); });
-    dataList.sort((a,b) => b.amt - a.amt);
-
-    let listUl = document.getElementById('rep-list');
-    listUl.innerHTML = '';
-
-    // 優化點：嚴格精準銷毀 Chart 實例，杜絕 iOS 設備記憶體溢流閃退
-    if (charts.pie) {
-        charts.pie.destroy();
-        charts.pie = null;
-    }
-
-    if(dataList.length === 0) {
-        listUl.innerHTML = `<div class="empty-state"><i data-lucide="pie-chart"></i><p>今年度尚無資料</p></div>`;
-        lucide.createIcons();
-        return;
-    }
-
-    dataList.forEach(item => {
-        let cObj = CATS.find(c => c.id === item.cid);
-        let row = document.createElement('div');
-        row.className = 'rec-item';
-        row.innerHTML = `
-            <div class="rec-left">
-                <div class="rec-icon-box" style="background:${cObj.color}15; color:${cObj.color};">
-                    <i data-lucide="${cObj.icon}" style="width:20px; height:20px;"></i>
-                </div>
-                <div class="rec-name">${cObj.name}</div>
-            </div>
-            <div class="rec-amt" style="color:var(--text); font-weight:700;">$${item.amt.toLocaleString()}</div>
-        `;
-        listUl.appendChild(row);
-    });
-    lucide.createIcons();
-
-    // 建立新圖表
-    let ctx = document.getElementById('pie-canvas').getContext('2d');
-    charts.pie = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: dataList.map(x => CATS.find(c => c.id === x.cid).name),
-            datasets: [{
-                data: dataList.map(x => x.amt),
-                backgroundColor: dataList.map(x => CATS.find(c => c.id === x.cid).color),
-                borderWidth: 0
-            }]
-        },
-        options: {
-            plugins: { legend: { display: false } },
-            cutout: '70%'
-        }
-    });
-}
-
-// --- ASSETS LOGIC ---
-function renderAst() {
-    let balances = {};
-    ACCS.forEach(a => balances[a.id] = 0);
-    
-    records.forEach(r => {
-        if(balances[r.acc] !== undefined) {
-            if(r.type === 'INC') balances[r.acc] += Number(r.amt);
-            else balances[r.acc] -= Number(r.amt);
-        }
-    });
-
-    let totalNet = Object.values(balances).reduce((a,b)=>a+b, 0);
-    document.getElementById('ast-total-net').innerText = `$${totalNet.toLocaleString()}`;
-
-    let box = document.getElementById('ast-list');
-    box.innerHTML = '';
-    
-    ACCS.forEach(a => {
-        let bal = balances[a.id];
-        let row = document.createElement('div');
-        row.className = 'ast-item';
-        row.innerHTML = `
-            <div class="rec-left">
-                <div class="rec-icon-box" style="background:${a.color}15; color:${a.color};">
-                    <i data-lucide="${a.icon}" style="width:20px; height:20px;"></i>
-                </div>
-                <div class="rec-name">${a.name}</div>
-            </div>
-            <div class="rec-amt" style="color:${bal >= 0 ? 'var(--text)' : 'var(--exp)'}; font-weight:700;">
-                $${bal.toLocaleString()}
-            </div>
-        `;
-        box.appendChild(row);
-    });
-    lucide.createIcons();
-}
-
-function clearAllData() {
-    if(confirm('確定要清除所有帳目明細嗎？此動作無法復原。')) {
-        records = [];
-        localStorage.removeItem('lzb_v24_recs');
-        renderHome();
-        if(curScr==='rep') renderRep();
-        if(curScr==='ast') renderAst();
-        alert('資料已成功重置');
-    }
+function delItem() { if(confirm('確認刪除此筆紀錄？')){ records=records.filter(r=>r.id!==state.id); localStorage.setItem('lzb_v27_recs', JSON.stringify(records)); closeA(); renderHome(); } }
+function saveS() {
+  config.name = document.getElementById('s-name').value || "知恩的手帳";
+  config.desc = document.getElementById('s-desc').value || "財富自由";
+  config.balance = Number(document.getElementById('s-balance').value) || 0;
+  config.budget = Number(document.getElementById('s-budget').value) || 20000;
+  localStorage.setItem('cfg_v27', JSON.stringify(config));
+  alert('設定儲存成功');
+  setTheme(config.theme);
+  switchView('home');
 }
 </script>
 </body>
