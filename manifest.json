@@ -1,24 +1,22 @@
 {
   "name": "知恩手帳 Pro",
   "short_name": "知恩手帳",
-  "description": "專為 iPhone 12 mini 優化的精緻記帳 App",
+  "description": "專業、極簡、流暢的隨身記帳與資產管理手帳",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#F9F9FB",
-  "theme_color": "#c38ed5",
+  "background_color": "#f8f9fa",
+  "theme-color": "#b19ffb",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/536/536060.png",
+      "src": "https://img.icons8.com/fluent/192/000000/diary.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/536/536060.png",
+      "src": "https://img.icons8.com/fluent/512/000000/diary.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     }
   ]
 }
