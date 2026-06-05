@@ -1,18 +1,24 @@
 {
-  "background_color": "#F9F9FB",
-  "description": "知恩手帳 Pro v23 - 財富自由，指日可待",
+  "name": "知恩手帳 Pro",
+  "short_name": "知恩手帳",
+  "description": "精緻好用的個人記帳手帳",
+  "start_url": "index.html",
   "display": "standalone",
+  "background_color": "#F9F9FB",
+  "theme_color": "#c38ed5",
+  "orientation": "portrait",
   "icons": [
     {
-      "sizes": "512x512",
       "src": "https://cdn-icons-png.flaticon.com/512/536/536060.png",
-      "type": "image/png"
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/536/536060.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
-  ],
-  "name": "知恩手帳 Pro v23",
-  "orientation": "portrait-primary",
-  "scope": "./",
-  "short_name": "知恩手帳",
-  "start_url": "./index.html",
-  "theme_color": "#c38ed5"
+  ]
 }
