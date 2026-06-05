@@ -1,5 +1,5 @@
-// sw.js - 知恩手帳 Service Worker v25
-const CACHE_NAME = 'zhien-diary-v25';
+// sw.js - 知恩手帳 Service Worker v27
+const CACHE_NAME = 'zhien-diary-v27';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const ASSETS_TO_CACHE = [
 
 // 安裝並快取資源
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // 立即接管，不等舊版 SW 退出
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS_TO_CACHE);
@@ -26,15 +27,18 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// 清除舊快取
+// 清除舊快取，並立即接管所有頁面
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    })
+    Promise.all([
+      clients.claim(), // 立即接管頁面
+      caches.keys().then((keys) => {
+        return Promise.all(
+          keys.map((key) => {
+            if (key !== CACHE_NAME) return caches.delete(key);
+          })
+        );
+      })
+    ])
   );
 });
