@@ -1,8 +1,9 @@
-// sw.js - 知恩手帳 Service Worker
-const CACHE_NAME = 'zhien-diary-v24';
+// sw.js - 知恩手帳 Service Worker v25
+const CACHE_NAME = 'zhien-diary-v25';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
+  './manifest.json',
   'https://unpkg.com/lucide@latest',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
 ];
@@ -16,11 +17,24 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// 攔截請求，優先從快取讀取（達成秒開與離線使用）
+// 攔截請求，優先從快取讀取（讓 App 秒開）
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
       return response || fetch(event.request);
+    })
+  );
+});
+
+// 清除舊快取
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) return caches.delete(key);
+        })
+      );
     })
   );
 });
